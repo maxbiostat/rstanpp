@@ -1,0 +1,6 @@
+^rstanglm\.Rproj$
+^\.Rproj\.user$
+Read-and-delete-me
+^\.github$
+.travis.yml
+^LICENSE\.md$
