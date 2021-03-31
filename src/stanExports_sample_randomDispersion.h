@@ -35,9 +35,9 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(0, 0, "start", "model_sample_randomDispersion");
     reader.add_event(7, 7, "include", "/functions/functions.stan");
     reader.add_event(7, 0, "start", "/functions/functions.stan");
-    reader.add_event(83, 76, "end", "/functions/functions.stan");
-    reader.add_event(83, 8, "restart", "model_sample_randomDispersion");
-    reader.add_event(117, 40, "end", "model_sample_randomDispersion");
+    reader.add_event(175, 168, "end", "/functions/functions.stan");
+    reader.add_event(175, 8, "restart", "model_sample_randomDispersion");
+    reader.add_event(209, 40, "end", "model_sample_randomDispersion");
     return reader;
 }
 template <typename T0__>
@@ -80,13 +80,8 @@ mu_linkinv(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& eta,
         } else if (as_bool(logical_eq(mu_link, 9))) {
             current_statement_begin__ = 24;
             return stan::math::promote_scalar<fun_return_scalar_t__>(inv(stan::math::sqrt(eta)));
-        } else {
-            current_statement_begin__ = 25;
-            std::stringstream errmsg_stream__;
-            errmsg_stream__ << "Invalid link";
-            throw std::domain_error(errmsg_stream__.str());
         }
-        current_statement_begin__ = 26;
+        current_statement_begin__ = 25;
         return stan::math::promote_scalar<fun_return_scalar_t__>(eta);
     } catch (const std::exception& e) {
         stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -104,6 +99,84 @@ struct mu_linkinv_functor__ {
 };
 template <typename T0__>
 Eigen::Matrix<typename boost::math::tools::promote_args<T0__>::type, Eigen::Dynamic, 1>
+mu_eta(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& eta,
+           const int& mu_link,
+           const int& N, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__>::type local_scalar_t__;
+    typedef local_scalar_t__ fun_return_scalar_t__;
+    const static bool propto__ = true;
+    (void) propto__;
+        local_scalar_t__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+    int current_statement_begin__ = -1;
+    try {
+        {
+        current_statement_begin__ = 28;
+        validate_non_negative_index("temp", "N", N);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> temp(N);
+        stan::math::initialize(temp, DUMMY_VAR__);
+        stan::math::fill(temp, DUMMY_VAR__);
+        current_statement_begin__ = 29;
+        if (as_bool(logical_eq(mu_link, 1))) {
+            current_statement_begin__ = 29;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(rep_vector(1.0, N));
+        } else if (as_bool(logical_eq(mu_link, 2))) {
+            current_statement_begin__ = 30;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(stan::math::exp(eta));
+        } else if (as_bool(logical_eq(mu_link, 3))) {
+            current_statement_begin__ = 32;
+            stan::math::assign(temp, stan::math::exp(eta));
+            current_statement_begin__ = 33;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(elt_divide(temp, square(add(1.0, temp))));
+        } else if (as_bool(logical_eq(mu_link, 4))) {
+            current_statement_begin__ = 35;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(multiply(-(1.0), inv(square(eta))));
+        } else if (as_bool(logical_eq(mu_link, 5))) {
+            current_statement_begin__ = 36;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(multiply(stan::math::sqrt((2 * stan::math::pi())), stan::math::exp(multiply(-(0.5), square(eta)))));
+        } else if (as_bool(logical_eq(mu_link, 6))) {
+            current_statement_begin__ = 37;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(divide(inv(add(1, square(eta))), stan::math::pi()));
+        } else if (as_bool(logical_eq(mu_link, 7))) {
+            current_statement_begin__ = 39;
+            stan::math::assign(temp, stan::math::exp(eta));
+            current_statement_begin__ = 40;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(elt_multiply(temp, stan::math::exp(minus(temp))));
+        } else if (as_bool(logical_eq(mu_link, 8))) {
+            current_statement_begin__ = 42;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(multiply(2.0, eta));
+        } else if (as_bool(logical_eq(mu_link, 9))) {
+            current_statement_begin__ = 44;
+            for (int i = 1; i <= N; ++i) {
+                current_statement_begin__ = 45;
+                stan::model::assign(temp, 
+                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                            (-(1.0) * inv((2.0 * pow(get_base1(eta, i, "eta", 1), 1.5)))), 
+                            "assigning variable temp");
+            }
+            current_statement_begin__ = 47;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(temp);
+        }
+        current_statement_begin__ = 49;
+        return stan::math::promote_scalar<fun_return_scalar_t__>(eta);
+        }
+    } catch (const std::exception& e) {
+        stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
+        // Next line prevents compiler griping about no return
+        throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+    }
+}
+struct mu_eta_functor__ {
+    template <typename T0__>
+        Eigen::Matrix<typename boost::math::tools::promote_args<T0__>::type, Eigen::Dynamic, 1>
+    operator()(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& eta,
+           const int& mu_link,
+           const int& N, std::ostream* pstream__) const {
+        return mu_eta(eta, mu_link, N, pstream__);
+    }
+};
+template <typename T0__>
+Eigen::Matrix<typename boost::math::tools::promote_args<T0__>::type, Eigen::Dynamic, 1>
 theta_link(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& eta,
                const int& mu_link,
                const int& dist, std::ostream* pstream__) {
@@ -115,26 +188,21 @@ theta_link(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& eta,
         (void) DUMMY_VAR__;  // suppress unused var warning
     int current_statement_begin__ = -1;
     try {
-        current_statement_begin__ = 38;
+        current_statement_begin__ = 63;
         if (as_bool(logical_eq(dist, 1))) {
-            current_statement_begin__ = 38;
+            current_statement_begin__ = 63;
             return stan::math::promote_scalar<fun_return_scalar_t__>(mu_linkinv(eta, mu_link, pstream__));
         } else if (as_bool(logical_eq(dist, 2))) {
-            current_statement_begin__ = 39;
+            current_statement_begin__ = 64;
             return stan::math::promote_scalar<fun_return_scalar_t__>(logit(mu_linkinv(eta, mu_link, pstream__)));
         } else if (as_bool(logical_eq(dist, 3))) {
-            current_statement_begin__ = 40;
+            current_statement_begin__ = 65;
             return stan::math::promote_scalar<fun_return_scalar_t__>(stan::math::log(mu_linkinv(eta, mu_link, pstream__)));
         } else if (as_bool(logical_eq(dist, 4))) {
-            current_statement_begin__ = 41;
+            current_statement_begin__ = 66;
             return stan::math::promote_scalar<fun_return_scalar_t__>(inv(mu_linkinv(eta, mu_link, pstream__)));
-        } else {
-            current_statement_begin__ = 42;
-            std::stringstream errmsg_stream__;
-            errmsg_stream__ << "Invalid density";
-            throw std::domain_error(errmsg_stream__.str());
         }
-        current_statement_begin__ = 43;
+        current_statement_begin__ = 67;
         return stan::math::promote_scalar<fun_return_scalar_t__>(eta);
     } catch (const std::exception& e) {
         stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -163,26 +231,21 @@ sum_bfun(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& theta,
         (void) DUMMY_VAR__;  // suppress unused var warning
     int current_statement_begin__ = -1;
     try {
-        current_statement_begin__ = 47;
+        current_statement_begin__ = 71;
         if (as_bool(logical_eq(dist, 1))) {
-            current_statement_begin__ = 47;
+            current_statement_begin__ = 71;
             return stan::math::promote_scalar<fun_return_scalar_t__>((0.5 * sum(square(theta))));
         } else if (as_bool(logical_eq(dist, 2))) {
-            current_statement_begin__ = 48;
+            current_statement_begin__ = 72;
             return stan::math::promote_scalar<fun_return_scalar_t__>(sum(stan::math::log(add(1.0, stan::math::exp(theta)))));
         } else if (as_bool(logical_eq(dist, 3))) {
-            current_statement_begin__ = 49;
+            current_statement_begin__ = 73;
             return stan::math::promote_scalar<fun_return_scalar_t__>(sum(stan::math::exp(theta)));
         } else if (as_bool(logical_eq(dist, 4))) {
-            current_statement_begin__ = 50;
+            current_statement_begin__ = 74;
             return stan::math::promote_scalar<fun_return_scalar_t__>((-(1.0) * sum(stan::math::log(theta))));
-        } else {
-            current_statement_begin__ = 51;
-            std::stringstream errmsg_stream__;
-            errmsg_stream__ << "Invalid density";
-            throw std::domain_error(errmsg_stream__.str());
         }
-        current_statement_begin__ = 52;
+        current_statement_begin__ = 75;
         return stan::math::promote_scalar<fun_return_scalar_t__>(sum(theta));
     } catch (const std::exception& e) {
         stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -217,15 +280,15 @@ glm_logpost(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& beta,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 64;
+        current_statement_begin__ = 87;
         validate_non_negative_index("theta", "N", N);
         Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> theta(N);
         stan::math::initialize(theta, DUMMY_VAR__);
         stan::math::fill(theta, DUMMY_VAR__);
         stan::math::assign(theta,multiply(X, beta));
-        current_statement_begin__ = 65;
+        current_statement_begin__ = 88;
         stan::math::assign(theta, theta_link(theta, mu_link, dist, pstream__));
-        current_statement_begin__ = 67;
+        current_statement_begin__ = 90;
         return stan::math::promote_scalar<fun_return_scalar_t__>(((lambda_post / dispersion) * (dot_product(m_post, theta) - sum_bfun(theta, dist, pstream__))));
         }
     } catch (const std::exception& e) {
@@ -263,26 +326,21 @@ sum_cfun(const T0__& sum_fy,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 76;
+        current_statement_begin__ = 99;
         local_scalar_t__ disp_inv(DUMMY_VAR__);
         (void) disp_inv;  // dummy to suppress unused var warning
         stan::math::initialize(disp_inv, DUMMY_VAR__);
         stan::math::fill(disp_inv, DUMMY_VAR__);
         stan::math::assign(disp_inv,inv(dispersion));
-        current_statement_begin__ = 77;
+        current_statement_begin__ = 100;
         if (as_bool(logical_eq(dist, 1))) {
-            current_statement_begin__ = 77;
+            current_statement_begin__ = 100;
             return stan::math::promote_scalar<fun_return_scalar_t__>((-(0.5) * ((sum_fy * disp_inv) + (N * stan::math::log(dispersion)))));
         } else if (as_bool(logical_eq(dist, 4))) {
-            current_statement_begin__ = 78;
+            current_statement_begin__ = 101;
             return stan::math::promote_scalar<fun_return_scalar_t__>((((disp_inv - 1) * sum_fy) - (N * ((disp_inv * stan::math::log(dispersion)) + stan::math::lgamma(disp_inv)))));
-        } else {
-            current_statement_begin__ = 79;
-            std::stringstream errmsg_stream__;
-            errmsg_stream__ << "Density must be gaussian or Gamma";
-            throw std::domain_error(errmsg_stream__.str());
         }
-        current_statement_begin__ = 80;
+        current_statement_begin__ = 102;
         return stan::math::promote_scalar<fun_return_scalar_t__>(0);
         }
     } catch (const std::exception& e) {
@@ -299,6 +357,274 @@ struct sum_cfun_functor__ {
              const int& N,
              const int& dist, std::ostream* pstream__) const {
         return sum_cfun(sum_fy, dispersion, N, dist, pstream__);
+    }
+};
+template <typename T0__>
+Eigen::Matrix<typename boost::math::tools::promote_args<T0__>::type, Eigen::Dynamic, 1>
+vfun(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& mu,
+         const int& dist, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__>::type local_scalar_t__;
+    typedef local_scalar_t__ fun_return_scalar_t__;
+    const static bool propto__ = true;
+    (void) propto__;
+        local_scalar_t__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+    int current_statement_begin__ = -1;
+    try {
+        current_statement_begin__ = 107;
+        if (as_bool(logical_eq(dist, 1))) {
+            current_statement_begin__ = 107;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(rep_vector(1.0, num_elements(mu)));
+        } else if (as_bool(logical_eq(dist, 2))) {
+            current_statement_begin__ = 108;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(elt_multiply(mu, subtract(1, mu)));
+        } else if (as_bool(logical_eq(dist, 3))) {
+            current_statement_begin__ = 109;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(mu);
+        } else if (as_bool(logical_eq(dist, 4))) {
+            current_statement_begin__ = 110;
+            return stan::math::promote_scalar<fun_return_scalar_t__>(square(mu));
+        }
+        current_statement_begin__ = 111;
+        return stan::math::promote_scalar<fun_return_scalar_t__>(mu);
+    } catch (const std::exception& e) {
+        stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
+        // Next line prevents compiler griping about no return
+        throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+    }
+}
+struct vfun_functor__ {
+    template <typename T0__>
+        Eigen::Matrix<typename boost::math::tools::promote_args<T0__>::type, Eigen::Dynamic, 1>
+    operator()(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& mu,
+         const int& dist, std::ostream* pstream__) const {
+        return vfun(mu, dist, pstream__);
+    }
+};
+template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T7__, typename T8__, typename T9__, typename T11__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T7__, T8__, T9__, typename boost::math::tools::promote_args<T11__>::type>::type>::type
+lognc_laplace(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& m,
+                  const Eigen::Matrix<T1__, Eigen::Dynamic, Eigen::Dynamic>& X,
+                  const Eigen::Matrix<T2__, Eigen::Dynamic, Eigen::Dynamic>& Q,
+                  const Eigen::Matrix<T3__, Eigen::Dynamic, Eigen::Dynamic>& R,
+                  const Eigen::Matrix<T4__, Eigen::Dynamic, Eigen::Dynamic>& Rinv,
+                  const int& dist,
+                  const int& mu_link,
+                  const Eigen::Matrix<T7__, Eigen::Dynamic, 1>& start,
+                  const T8__& lambda,
+                  const T9__& tau,
+                  const int& maxit,
+                  const T11__& tol,
+                  const int& n,
+                  const int& p, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T7__, T8__, T9__, typename boost::math::tools::promote_args<T11__>::type>::type>::type local_scalar_t__;
+    typedef local_scalar_t__ fun_return_scalar_t__;
+    const static bool propto__ = true;
+    (void) propto__;
+        local_scalar_t__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+    int current_statement_begin__ = -1;
+    try {
+        {
+        current_statement_begin__ = 117;
+        local_scalar_t__ log2pi(DUMMY_VAR__);
+        (void) log2pi;  // dummy to suppress unused var warning
+        stan::math::initialize(log2pi, DUMMY_VAR__);
+        stan::math::fill(log2pi, DUMMY_VAR__);
+        current_statement_begin__ = 118;
+        local_scalar_t__ lambda_tau(DUMMY_VAR__);
+        (void) lambda_tau;  // dummy to suppress unused var warning
+        stan::math::initialize(lambda_tau, DUMMY_VAR__);
+        stan::math::fill(lambda_tau, DUMMY_VAR__);
+        stan::math::assign(lambda_tau,(lambda * tau));
+        current_statement_begin__ = 119;
+        validate_non_negative_index("s", "p", p);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> s(p);
+        stan::math::initialize(s, DUMMY_VAR__);
+        stan::math::fill(s, DUMMY_VAR__);
+        current_statement_begin__ = 120;
+        validate_non_negative_index("s_old", "p", p);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> s_old(p);
+        stan::math::initialize(s_old, DUMMY_VAR__);
+        stan::math::fill(s_old, DUMMY_VAR__);
+        current_statement_begin__ = 121;
+        validate_non_negative_index("s1", "p", p);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> s1(p);
+        stan::math::initialize(s1, DUMMY_VAR__);
+        stan::math::fill(s1, DUMMY_VAR__);
+        current_statement_begin__ = 122;
+        validate_non_negative_index("eta", "n", n);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(n);
+        stan::math::initialize(eta, DUMMY_VAR__);
+        stan::math::fill(eta, DUMMY_VAR__);
+        current_statement_begin__ = 123;
+        validate_non_negative_index("W", "n", n);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> W(n);
+        stan::math::initialize(W, DUMMY_VAR__);
+        stan::math::fill(W, DUMMY_VAR__);
+        current_statement_begin__ = 124;
+        validate_non_negative_index("z", "n", n);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> z(n);
+        stan::math::initialize(z, DUMMY_VAR__);
+        stan::math::fill(z, DUMMY_VAR__);
+        current_statement_begin__ = 125;
+        validate_non_negative_index("mu", "n", n);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(n);
+        stan::math::initialize(mu, DUMMY_VAR__);
+        stan::math::fill(mu, DUMMY_VAR__);
+        current_statement_begin__ = 126;
+        validate_non_negative_index("mu_p", "n", n);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu_p(n);
+        stan::math::initialize(mu_p, DUMMY_VAR__);
+        stan::math::fill(mu_p, DUMMY_VAR__);
+        current_statement_begin__ = 127;
+        validate_non_negative_index("C", "p", p);
+        validate_non_negative_index("C", "p", p);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> C(p, p);
+        stan::math::initialize(C, DUMMY_VAR__);
+        stan::math::fill(C, DUMMY_VAR__);
+        current_statement_begin__ = 128;
+        local_scalar_t__ logdetI(DUMMY_VAR__);
+        (void) logdetI;  // dummy to suppress unused var warning
+        stan::math::initialize(logdetI, DUMMY_VAR__);
+        stan::math::fill(logdetI, DUMMY_VAR__);
+        current_statement_begin__ = 129;
+        int is_converged(0);
+        (void) is_converged;  // dummy to suppress unused var warning
+        stan::math::fill(is_converged, std::numeric_limits<int>::min());
+        current_statement_begin__ = 130;
+        validate_non_negative_index("betahat", "p", p);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> betahat(p);
+        stan::math::initialize(betahat, DUMMY_VAR__);
+        stan::math::fill(betahat, DUMMY_VAR__);
+        current_statement_begin__ = 132;
+        validate_non_negative_index("Iinv", "p", p);
+        validate_non_negative_index("Iinv", "p", p);
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> Iinv(p, p);
+        stan::math::initialize(Iinv, DUMMY_VAR__);
+        stan::math::fill(Iinv, DUMMY_VAR__);
+        current_statement_begin__ = 133;
+        local_scalar_t__ logp(DUMMY_VAR__);
+        (void) logp;  // dummy to suppress unused var warning
+        stan::math::initialize(logp, DUMMY_VAR__);
+        stan::math::fill(logp, DUMMY_VAR__);
+        current_statement_begin__ = 134;
+        local_scalar_t__ laplace(DUMMY_VAR__);
+        (void) laplace;  // dummy to suppress unused var warning
+        stan::math::initialize(laplace, DUMMY_VAR__);
+        stan::math::fill(laplace, DUMMY_VAR__);
+        current_statement_begin__ = 136;
+        stan::math::assign(log2pi, 1.83787706641);
+        current_statement_begin__ = 137;
+        stan::math::assign(lambda_tau, (lambda * tau));
+        current_statement_begin__ = 138;
+        stan::math::assign(s, start);
+        current_statement_begin__ = 139;
+        stan::math::assign(eta, rep_vector(1.0, n));
+        current_statement_begin__ = 140;
+        for (int i = 1; i <= maxit; ++i) {
+            current_statement_begin__ = 141;
+            stan::math::assign(s_old, s);
+            current_statement_begin__ = 142;
+            stan::math::assign(mu, mu_linkinv(eta, mu_link, pstream__));
+            current_statement_begin__ = 143;
+            stan::math::assign(mu_p, mu_eta(eta, mu_link, n, pstream__));
+            current_statement_begin__ = 144;
+            stan::math::assign(z, add(eta, elt_divide(subtract(m, mu), mu_p)));
+            current_statement_begin__ = 145;
+            stan::math::assign(W, elt_divide(square(mu_p), vfun(mu, dist, pstream__)));
+            current_statement_begin__ = 146;
+            stan::math::assign(C, multiply(transpose(Q), diag_pre_multiply(W, Q)));
+            current_statement_begin__ = 147;
+            stan::math::assign(s, mdivide_left_spd(C, multiply(transpose(Q), elt_multiply(W, z))));
+            current_statement_begin__ = 148;
+            stan::math::assign(eta, multiply(Q, s));
+            current_statement_begin__ = 150;
+            stan::math::assign(is_converged, logical_lt(stan::math::sqrt(sum(square(subtract(s, s_old)))), tol));
+            current_statement_begin__ = 151;
+            if (as_bool(logical_eq(is_converged, 1))) {
+                current_statement_begin__ = 151;
+                break;
+            }
+        }
+        current_statement_begin__ = 154;
+        stan::math::assign(betahat, multiply(multiply(Rinv, transpose(Q)), eta));
+        current_statement_begin__ = 158;
+        stan::math::assign(Iinv, multiply(multiply((1.0 / lambda_tau), transpose(X)), diag_pre_multiply(W, X)));
+        current_statement_begin__ = 161;
+        stan::math::assign(logdetI, (-(1.0) * log_determinant(Iinv)));
+        current_statement_begin__ = 164;
+        stan::math::assign(laplace, ((0.5 * ((p * log2pi) + logdetI)) + glm_logpost(betahat, (1.0 / tau), m, lambda, X, dist, mu_link, n, pstream__)));
+        current_statement_begin__ = 166;
+        return stan::math::promote_scalar<fun_return_scalar_t__>(laplace);
+        }
+    } catch (const std::exception& e) {
+        stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
+        // Next line prevents compiler griping about no return
+        throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+    }
+}
+struct lognc_laplace_functor__ {
+    template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T7__, typename T8__, typename T9__, typename T11__>
+        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T7__, T8__, T9__, typename boost::math::tools::promote_args<T11__>::type>::type>::type
+    operator()(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& m,
+                  const Eigen::Matrix<T1__, Eigen::Dynamic, Eigen::Dynamic>& X,
+                  const Eigen::Matrix<T2__, Eigen::Dynamic, Eigen::Dynamic>& Q,
+                  const Eigen::Matrix<T3__, Eigen::Dynamic, Eigen::Dynamic>& R,
+                  const Eigen::Matrix<T4__, Eigen::Dynamic, Eigen::Dynamic>& Rinv,
+                  const int& dist,
+                  const int& mu_link,
+                  const Eigen::Matrix<T7__, Eigen::Dynamic, 1>& start,
+                  const T8__& lambda,
+                  const T9__& tau,
+                  const int& maxit,
+                  const T11__& tol,
+                  const int& n,
+                  const int& p, std::ostream* pstream__) const {
+        return lognc_laplace(m, X, Q, R, Rinv, dist, mu_link, start, lambda, tau, maxit, tol, n, p, pstream__);
+    }
+};
+template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type
+locprior_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& nu,
+                  const T1__& lambda0,
+                  const T2__& tau,
+                  const Eigen::Matrix<T3__, Eigen::Dynamic, 1>& m0,
+                  const int& dist, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type local_scalar_t__;
+    typedef local_scalar_t__ fun_return_scalar_t__;
+    const static bool propto__ = true;
+    (void) propto__;
+        local_scalar_t__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+    int current_statement_begin__ = -1;
+    try {
+        current_statement_begin__ = 171;
+        return stan::math::promote_scalar<fun_return_scalar_t__>(((lambda0 * tau) * (sum(elt_multiply(m0, nu)) - sum_bfun(nu, dist, pstream__))));
+    } catch (const std::exception& e) {
+        stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
+        // Next line prevents compiler griping about no return
+        throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+    }
+}
+template <typename T0__, typename T1__, typename T2__, typename T3__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type
+locprior_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& nu,
+                  const T1__& lambda0,
+                  const T2__& tau,
+                  const Eigen::Matrix<T3__, Eigen::Dynamic, 1>& m0,
+                  const int& dist, std::ostream* pstream__) {
+    return locprior_lpdf<false>(nu,lambda0,tau,m0,dist, pstream__);
+}
+struct locprior_lpdf_functor__ {
+    template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__>
+        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type
+    operator()(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& nu,
+                  const T1__& lambda0,
+                  const T2__& tau,
+                  const Eigen::Matrix<T3__, Eigen::Dynamic, 1>& m0,
+                  const int& dist, std::ostream* pstream__) const {
+        return locprior_lpdf(nu, lambda0, tau, m0, dist, pstream__);
     }
 };
 #include <stan_meta_header.hpp>
@@ -345,21 +671,21 @@ public:
         (void) DUMMY_VAR__;  // suppress unused var warning
         try {
             // initialize data block variables from context__
-            current_statement_begin__ = 89;
+            current_statement_begin__ = 181;
             context__.validate_dims("data initialization", "N", "int", context__.to_vec());
             N = int(0);
             vals_i__ = context__.vals_i("N");
             pos__ = 0;
             N = vals_i__[pos__++];
             check_greater_or_equal(function__, "N", N, 0);
-            current_statement_begin__ = 90;
+            current_statement_begin__ = 182;
             context__.validate_dims("data initialization", "K", "int", context__.to_vec());
             K = int(0);
             vals_i__ = context__.vals_i("K");
             pos__ = 0;
             K = vals_i__[pos__++];
             check_greater_or_equal(function__, "K", K, 0);
-            current_statement_begin__ = 91;
+            current_statement_begin__ = 183;
             validate_non_negative_index("X", "N", N);
             validate_non_negative_index("X", "K", K);
             context__.validate_dims("data initialization", "X", "matrix_d", context__.to_vec(N,K));
@@ -373,7 +699,7 @@ public:
                     X(j_1__, j_2__) = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 92;
+            current_statement_begin__ = 184;
             validate_non_negative_index("m_post", "N", N);
             context__.validate_dims("data initialization", "m_post", "vector_d", context__.to_vec(N));
             m_post = Eigen::Matrix<double, Eigen::Dynamic, 1>(N);
@@ -383,14 +709,14 @@ public:
             for (size_t j_1__ = 0; j_1__ < m_post_j_1_max__; ++j_1__) {
                 m_post(j_1__) = vals_r__[pos__++];
             }
-            current_statement_begin__ = 93;
+            current_statement_begin__ = 185;
             context__.validate_dims("data initialization", "lambda_post", "double", context__.to_vec());
             lambda_post = double(0);
             vals_r__ = context__.vals_r("lambda_post");
             pos__ = 0;
             lambda_post = vals_r__[pos__++];
             check_greater_or_equal(function__, "lambda_post", lambda_post, 0);
-            current_statement_begin__ = 94;
+            current_statement_begin__ = 186;
             context__.validate_dims("data initialization", "mu_link", "int", context__.to_vec());
             mu_link = int(0);
             vals_i__ = context__.vals_i("mu_link");
@@ -398,7 +724,7 @@ public:
             mu_link = vals_i__[pos__++];
             check_greater_or_equal(function__, "mu_link", mu_link, 1);
             check_less_or_equal(function__, "mu_link", mu_link, 9);
-            current_statement_begin__ = 95;
+            current_statement_begin__ = 187;
             context__.validate_dims("data initialization", "dist", "int", context__.to_vec());
             dist = int(0);
             vals_i__ = context__.vals_i("dist");
@@ -406,21 +732,21 @@ public:
             dist = vals_i__[pos__++];
             check_greater_or_equal(function__, "dist", dist, 1);
             check_less_or_equal(function__, "dist", dist, 4);
-            current_statement_begin__ = 96;
+            current_statement_begin__ = 188;
             context__.validate_dims("data initialization", "dispersion_shape", "double", context__.to_vec());
             dispersion_shape = double(0);
             vals_r__ = context__.vals_r("dispersion_shape");
             pos__ = 0;
             dispersion_shape = vals_r__[pos__++];
             check_greater_or_equal(function__, "dispersion_shape", dispersion_shape, 0);
-            current_statement_begin__ = 97;
+            current_statement_begin__ = 189;
             context__.validate_dims("data initialization", "dispersion_rate", "double", context__.to_vec());
             dispersion_rate = double(0);
             vals_r__ = context__.vals_r("dispersion_rate");
             pos__ = 0;
             dispersion_rate = vals_r__[pos__++];
             check_greater_or_equal(function__, "dispersion_rate", dispersion_rate, 0);
-            current_statement_begin__ = 98;
+            current_statement_begin__ = 190;
             context__.validate_dims("data initialization", "sum_fy", "double", context__.to_vec());
             sum_fy = double(0);
             vals_r__ = context__.vals_r("sum_fy");
@@ -432,10 +758,10 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 103;
+            current_statement_begin__ = 195;
             validate_non_negative_index("beta", "K", K);
             num_params_r__ += K;
-            current_statement_begin__ = 104;
+            current_statement_begin__ = 196;
             num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -454,7 +780,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 103;
+        current_statement_begin__ = 195;
         if (!(context__.contains_r("beta")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta");
@@ -471,7 +797,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 104;
+        current_statement_begin__ = 196;
         if (!(context__.contains_r("dispersion")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable dispersion missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("dispersion");
@@ -509,14 +835,14 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 103;
+            current_statement_begin__ = 195;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> beta;
             (void) beta;  // dummy to suppress unused var warning
             if (jacobian__)
                 beta = in__.vector_constrain(K, lp__);
             else
                 beta = in__.vector_constrain(K);
-            current_statement_begin__ = 104;
+            current_statement_begin__ = 196;
             local_scalar_t__ dispersion;
             (void) dispersion;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -524,11 +850,11 @@ public:
             else
                 dispersion = in__.scalar_lb_constrain(0);
             // model body
-            current_statement_begin__ = 109;
+            current_statement_begin__ = 201;
             lp_accum__.add(inv_gamma_log<propto__>(dispersion, dispersion_shape, dispersion_rate));
-            current_statement_begin__ = 110;
+            current_statement_begin__ = 202;
             lp_accum__.add(glm_logpost(beta, dispersion, m_post, lambda_post, X, dist, mu_link, N, pstream__));
-            current_statement_begin__ = 111;
+            current_statement_begin__ = 203;
             lp_accum__.add(sum_cfun(sum_fy, dispersion, N, dist, pstream__));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());

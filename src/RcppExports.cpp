@@ -8,10 +8,14 @@ using namespace Rcpp;
 
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4sample_fixedDispersion_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4sample_hierarchical_binomial_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4sample_hierarchical_poisson_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4sample_randomDispersion_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4sample_fixedDispersion_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_fixedDispersion_mod, 0},
+    {"_rcpp_module_boot_stan_fit4sample_hierarchical_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_hierarchical_binomial_mod, 0},
+    {"_rcpp_module_boot_stan_fit4sample_hierarchical_poisson_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_hierarchical_poisson_mod, 0},
     {"_rcpp_module_boot_stan_fit4sample_randomDispersion_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_randomDispersion_mod, 0},
     {NULL, NULL, 0}
 };
