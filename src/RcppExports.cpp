@@ -7,20 +7,28 @@
 using namespace Rcpp;
 
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4sample_fixedDispersion_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4sample_hierarchical_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4sample_hierarchical_poisson_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4sample_randomDispersion_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_bernoulli_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_bernoulli_post_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_gamma_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_gamma_post_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_gaussian_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_gaussian_post_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_poisson_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_pp_poisson_post_mod();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rcpp_module_boot_stan_fit4sample_fixedDispersion_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_fixedDispersion_mod, 0},
-    {"_rcpp_module_boot_stan_fit4sample_hierarchical_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_hierarchical_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4sample_hierarchical_poisson_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_hierarchical_poisson_mod, 0},
-    {"_rcpp_module_boot_stan_fit4sample_randomDispersion_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4sample_randomDispersion_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_bernoulli_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_bernoulli_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_bernoulli_post_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_bernoulli_post_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_gamma_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_gamma_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_gamma_post_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_gamma_post_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_gaussian_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_gaussian_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_gaussian_post_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_gaussian_post_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_poisson_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_poisson_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_pp_poisson_post_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_pp_poisson_post_mod, 0},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_rstanglm(DllInfo *dll) {
+RcppExport void R_init_rstanpp(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

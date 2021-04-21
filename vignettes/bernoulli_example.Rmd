@@ -1,0 +1,123 @@
+---
+title: "Normalized Power Prior for Logistic Regression"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{bernoulli_example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+This vignette provides a tutorial for using the `rstanpp` package for generalized linear models (GLMs). 
+Specifically, we provide an example for the application of the method to a logistic regression model. 
+
+### Power prior
+The power prior (Chen and Ibrahim, 2000) provides the ability to utilize historical data via  down-weighted likelihood. To fix ideas,
+suppose we possess current data $D = \{ (y_i, \pmb{x}_i'), i = 1, \ldots, n \}$ and historical data
+$D_0 = \{ (y_{0i}, \mathbf{x}_{0i}), i = 1, \ldots, n_0 \}$. The power prior with parameter $a_0 \in [0, 1]$ is given by
+$$
+\pi(\pmb{\beta} | D_0, \pmb{\mu}_0, \pmb{\Sigma}_0) = L(\pmb{\beta} | D_0)^{a_0} \pi_0(\pmb{\beta} | \pmb{\mu}_0, \pmb{\Sigma}_0),
+$$
+where $L(\pmb{\beta} | D_0)$ is the likelihood of the GLM for the historical data and $\pi_0(\pmb{\beta} | \pmb{\mu}_0, \pmb{\Sigma}_0)$ is an initial prior, which we may take to be multivariate normal with mean $\pmb{\mu}_0$ and covariance matrix $\pmb{\Sigma}_0$.
+
+
+### Normalized power prior
+Suppose we wish to treat the power prior parameter $a_0 \in [0, 1]$ as random. The problem is we do not know the normalizing constant in general
+$$
+c(a_0;\pmb{\mu}_0, \pmb{\Sigma}_0) := \int \pi(\pmb{\beta} | D_0, \pmb{\mu}_0, \pmb{\Sigma}_0) d\pmb{\beta}
+$$
+This is where `rstanpp` comes to help. Using the package, we may estimate the logarithm of the normalizing constant, as we show in the example below.
+
+
+## Logistic Regression Example
+
+### Loading the package and generating the data
+We begin by generating data from a logistic regression. For simplicity, we will use one covariate $x \sim N(0, 3^2)$. The historical data set will have $n_0 = 50$ observations and the current data set will have $n = 100$ observations. The code below loads the package and generates the simulated data
+```{r setup}
+library(rstanpp)
+library(rstan)
+rstan_options(auto_write = TRUE)
+
+set.seed(123)
+
+## Obtain bernoulli sample
+n0   = 50
+n    = 100
+x    = rnorm(n, mean = 0, sd = 3)    ## current data covariate
+x0   = rnorm(n0, mean = 0, sd = 3)   ## historical data covariate
+X    = cbind(1, x)
+X0   = cbind(1, x0)
+beta = c(0, 1)
+y    = rbinom(n, size = 1, prob = binomial()$linkinv(X %*% beta))
+y0   = rbinom(n0, size = 1, prob = binomial()$linkinv(X0 %*% beta))
+
+## construct data set
+data = data.frame(y, x)
+histdata = data.frame(y = y0, x = x0)
+```
+
+### Estimating the logarithm of the normalizing constant, $\log c(a_0)$
+Now, we estimate the logarithm of the normalizing constant for a "fine grid" of values in $[0,1]$ using the historical data.
+
+The following code will estimate the logarithm of the normalizing constant for 20 equally-spaced values of $a_0$. We will use
+importance sampling and bridge sampling and compare the results. Importance sampling is substantially faster than bridge sampling,
+but in small samples, bridge sampling may be more accurate. Thus, it is useful to see if there are substantial differences. 
+
+We will take $M = 2000$ importance samples using a normal importance density utilizing the posterior mode and negative inverse Hessian.
+
+For bridge sampling, we use Stan to obtain 1500 samples from the power prior density (after a warmup of 500). 
+```{r lognc_compare}
+## obtain estimate of lognc of prior
+a0.lognc.importance = logncpp_glm(formula = y ~ x, family = binomial(), histdata = histdata, a0 = 20, method = 'importance', nsmpl = 2000)
+a0.lognc.bridge     = logncpp_glm(formula = y ~ x, family = binomial(), histdata = histdata, a0 = 20, method = 'bridge', iter = 2000, warmup = 500)
+
+plot(a0.lognc.importance, type = 'l')
+lines(a0.lognc.bridge, col = 'red')
+legend(x = 0.6,  y = 4, legend = c('importance', 'bridge'), col = c('black', 'red'), lty = c(1,1))
+```
+
+The plots suggest that using importance sampling and bridge sampling give very similar results. Thus, we elect to use importance
+sampling because it is much quicker. Specifically, we will utilize importance sampling to obtain the value of the log normalizing constant
+for fine grid of $500$ values of $a_0$.
+
+```{r lognc_importance}
+a0.lognc = logncpp_glm(formula = formula, family = binomial(), histdata = histdata, a0 = 500, method = 'importance', nsmpl = 2000)
+head(a0.lognc)
+```
+
+Seeking a smooth estimate of the log normalizing constant, we create an even finer grid of $20,000$ values of $a_0$, using a LOESS curve to 
+give an accurate prediction of the log normalizing constant for each of the values
+```{r lognc_loess}
+fit.loess  = loess(formula = lognc ~ a0, data = data.frame(a0.lognc), span = 0.10)
+a0.grid    = seq(0, 1, length.out = 20000)
+lognc.grid = predict(fit.loess, a0.grid)
+lognc.grid = cbind(a0.grid, lognc.grid)
+plot(a0.lognc, type = 'l')
+lines(lognc.grid, col = 'red')
+legend(x = 0.4,  y = 4, legend = c('importance', 'loess(alpha=0.1)'), col = c('black', 'red'), lty = c(1,1))
+```
+The LOESS-predicted values of the log normalizing constant line up well with what was obtained using importance sampling.
+
+Now that we have estimated the log normalizing constant over the support of $a_0$, we may finally obtain posterior samples,
+treating $a_0$ as random.
+
+
+## Obtaining posterior samples utilizing the normalized power prior
+Finally, we may obtain posterior samples using both the current and historical data sets. This is
+done through the function `glm_npp`.
+```{r npp_sample}
+## Use the grid to perform sampling on normalized power prior
+fit.npp = glm_npp(formula = formula, family = binomial(), data = data, histdata = histdata, a0.lognc = lognc.grid, chains = 1, iter = 10000, warmup = 1000)
+plot(fit.npp)
+summary(fit.npp)
+```
+
+
+

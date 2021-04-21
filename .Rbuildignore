@@ -4,3 +4,4 @@ Read-and-delete-me
 ^\.github$
 .travis.yml
 ^LICENSE\.md$
+internalTest$

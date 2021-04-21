@@ -1,5 +1,9 @@
 .Rproj.user
 .Rhistory
-.Rdata
-.httr-oauth
-.DS_Store
+.RData
+.Ruserdata
+src/*.o
+src/*.so
+src/*.dll
+internalTest
+inst/doc
