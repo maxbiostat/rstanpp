@@ -26,10 +26,26 @@ parameters {
 // Assume beta is a priori MVN; obtain posterior
 // based on power prior
 model {
-  vector[nobs] eta = X * beta;
-  if (incl_offset == 1) {
-    eta = eta + offset;
-  }
+  vector[( (link != 2) || (incl_offset == 1) ) ? nobs :  0] eta;
+  vector[(link != 2) ? nobs :  0] mu;
+  
+  // initial prior is MVN for beta
   beta ~ multi_normal(beta0, Sigma0);
-  target += poisson_glm_pp_lp(y0, a0, eta, link);
+  
+  // add log power prior--using the best stan function available per scenario
+  if ( a0 > 0 ) {
+    if ( link == 2 && incl_offset == 0 )
+      target += a0 * poisson_log_glm_lpmf(y0 | X, 0, beta);
+    else {
+      eta = X * beta;
+      if ( incl_offset == 1 )
+        eta += offset;
+      if ( link == 2 )
+        target += a0 * poisson_log_lpmf(y0 | eta);
+      else {
+        mu = linkinv(eta, link);
+        target += a0 * poisson_lpmf(y0 | mu);
+      }
+    }
+  }
 }

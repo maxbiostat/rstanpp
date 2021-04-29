@@ -45,7 +45,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(152, 0, "start", "/functions/finda0closest.stan");
     reader.add_event(208, 56, "end", "/functions/finda0closest.stan");
     reader.add_event(208, 5, "restart", "model_glm_pp_gaussian_post");
-    reader.add_event(265, 60, "end", "model_glm_pp_gaussian_post");
+    reader.add_event(288, 83, "end", "model_glm_pp_gaussian_post");
     return reader;
 }
 template <typename T0__>
@@ -560,8 +560,10 @@ private:
         std::vector<double> lognca0;
         double a0_shape1;
         double a0_shape2;
-        double invdisp_shape;
-        double invdisp_rate;
+        double disp_shape;
+        double disp_scale;
+        vector_d y0vec;
+        vector_d yvec;
 public:
     model_glm_pp_gaussian_post(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -768,31 +770,41 @@ public:
             a0_shape2 = vals_r__[pos__++];
             check_greater_or_equal(function__, "a0_shape2", a0_shape2, 0);
             current_statement_begin__ = 231;
-            context__.validate_dims("data initialization", "invdisp_shape", "double", context__.to_vec());
-            invdisp_shape = double(0);
-            vals_r__ = context__.vals_r("invdisp_shape");
+            context__.validate_dims("data initialization", "disp_shape", "double", context__.to_vec());
+            disp_shape = double(0);
+            vals_r__ = context__.vals_r("disp_shape");
             pos__ = 0;
-            invdisp_shape = vals_r__[pos__++];
-            check_greater_or_equal(function__, "invdisp_shape", invdisp_shape, 0);
+            disp_shape = vals_r__[pos__++];
+            check_greater_or_equal(function__, "disp_shape", disp_shape, 0);
             current_statement_begin__ = 232;
-            context__.validate_dims("data initialization", "invdisp_rate", "double", context__.to_vec());
-            invdisp_rate = double(0);
-            vals_r__ = context__.vals_r("invdisp_rate");
+            context__.validate_dims("data initialization", "disp_scale", "double", context__.to_vec());
+            disp_scale = double(0);
+            vals_r__ = context__.vals_r("disp_scale");
             pos__ = 0;
-            invdisp_rate = vals_r__[pos__++];
-            check_greater_or_equal(function__, "invdisp_rate", invdisp_rate, 0);
+            disp_scale = vals_r__[pos__++];
+            check_greater_or_equal(function__, "disp_scale", disp_scale, 0);
             // initialize transformed data variables
+            current_statement_begin__ = 236;
+            validate_non_negative_index("y0vec", "N0", N0);
+            y0vec = Eigen::Matrix<double, Eigen::Dynamic, 1>(N0);
+            stan::math::fill(y0vec, DUMMY_VAR__);
+            stan::math::assign(y0vec,to_vector(y0));
+            current_statement_begin__ = 237;
+            validate_non_negative_index("yvec", "N", N);
+            yvec = Eigen::Matrix<double, Eigen::Dynamic, 1>(N);
+            stan::math::fill(yvec, DUMMY_VAR__);
+            stan::math::assign(yvec,to_vector(y));
             // execute transformed data statements
             // validate transformed data
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 237;
+            current_statement_begin__ = 242;
             validate_non_negative_index("beta", "p", p);
             num_params_r__ += p;
-            current_statement_begin__ = 238;
+            current_statement_begin__ = 243;
             num_params_r__ += 1;
-            current_statement_begin__ = 239;
+            current_statement_begin__ = 244;
             num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -811,7 +823,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 237;
+        current_statement_begin__ = 242;
         if (!(context__.contains_r("beta")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta");
@@ -828,20 +840,20 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 238;
-        if (!(context__.contains_r("invdisp")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable invdisp missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("invdisp");
+        current_statement_begin__ = 243;
+        if (!(context__.contains_r("dispersion")))
+            stan::lang::rethrow_located(std::runtime_error(std::string("Variable dispersion missing")), current_statement_begin__, prog_reader__());
+        vals_r__ = context__.vals_r("dispersion");
         pos__ = 0U;
-        context__.validate_dims("parameter initialization", "invdisp", "double", context__.to_vec());
-        double invdisp(0);
-        invdisp = vals_r__[pos__++];
+        context__.validate_dims("parameter initialization", "dispersion", "double", context__.to_vec());
+        double dispersion(0);
+        dispersion = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0, invdisp);
+            writer__.scalar_lb_unconstrain(0, dispersion);
         } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable invdisp: ") + e.what()), current_statement_begin__, prog_reader__());
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable dispersion: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 239;
+        current_statement_begin__ = 244;
         if (!(context__.contains_r("a0")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable a0 missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("a0");
@@ -879,21 +891,21 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 237;
+            current_statement_begin__ = 242;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> beta;
             (void) beta;  // dummy to suppress unused var warning
             if (jacobian__)
                 beta = in__.vector_constrain(p, lp__);
             else
                 beta = in__.vector_constrain(p);
-            current_statement_begin__ = 238;
-            local_scalar_t__ invdisp;
-            (void) invdisp;  // dummy to suppress unused var warning
+            current_statement_begin__ = 243;
+            local_scalar_t__ dispersion;
+            (void) dispersion;  // dummy to suppress unused var warning
             if (jacobian__)
-                invdisp = in__.scalar_lb_constrain(0, lp__);
+                dispersion = in__.scalar_lb_constrain(0, lp__);
             else
-                invdisp = in__.scalar_lb_constrain(0);
-            current_statement_begin__ = 239;
+                dispersion = in__.scalar_lb_constrain(0);
+            current_statement_begin__ = 244;
             local_scalar_t__ a0;
             (void) a0;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -902,46 +914,78 @@ public:
                 a0 = in__.scalar_lub_constrain(0, 1);
             // model body
             {
-            current_statement_begin__ = 244;
-            local_scalar_t__ phi(DUMMY_VAR__);
-            (void) phi;  // dummy to suppress unused var warning
-            stan::math::initialize(phi, DUMMY_VAR__);
-            stan::math::fill(phi, DUMMY_VAR__);
-            stan::math::assign(phi,inv(invdisp));
-            current_statement_begin__ = 247;
-            validate_non_negative_index("eta0", "N0", N0);
-            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta0(N0);
-            stan::math::initialize(eta0, DUMMY_VAR__);
-            stan::math::fill(eta0, DUMMY_VAR__);
-            stan::math::assign(eta0,multiply(X0, beta));
             current_statement_begin__ = 248;
-            validate_non_negative_index("eta", "N", N);
-            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(N);
+            validate_non_negative_index("eta", "((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? N : 0 )", ((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? N : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? N : 0 ));
             stan::math::initialize(eta, DUMMY_VAR__);
             stan::math::fill(eta, DUMMY_VAR__);
-            stan::math::assign(eta,multiply(X, beta));
             current_statement_begin__ = 249;
-            if (as_bool(logical_eq(incl_offset, 1))) {
-                current_statement_begin__ = 250;
-                stan::math::assign(eta0, add(eta0, offset0));
-                current_statement_begin__ = 251;
-                stan::math::assign(eta, add(eta, offset));
-            }
-            current_statement_begin__ = 255;
+            validate_non_negative_index("eta0", "((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? N0 : 0 )", ((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? N0 : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta0(((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? N0 : 0 ));
+            stan::math::initialize(eta0, DUMMY_VAR__);
+            stan::math::fill(eta0, DUMMY_VAR__);
+            current_statement_begin__ = 250;
+            validate_non_negative_index("mu", "(logical_neq(link, 1) ? N : 0 )", (logical_neq(link, 1) ? N : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu((logical_neq(link, 1) ? N : 0 ));
+            stan::math::initialize(mu, DUMMY_VAR__);
+            stan::math::fill(mu, DUMMY_VAR__);
+            current_statement_begin__ = 251;
+            validate_non_negative_index("mu0", "(logical_neq(link, 1) ? N0 : 0 )", (logical_neq(link, 1) ? N0 : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu0((logical_neq(link, 1) ? N0 : 0 ));
+            stan::math::initialize(mu0, DUMMY_VAR__);
+            stan::math::fill(mu0, DUMMY_VAR__);
+            current_statement_begin__ = 252;
+            local_scalar_t__ sigma(DUMMY_VAR__);
+            (void) sigma;  // dummy to suppress unused var warning
+            stan::math::initialize(sigma, DUMMY_VAR__);
+            stan::math::fill(sigma, DUMMY_VAR__);
+            stan::math::assign(sigma,stan::math::sqrt(dispersion));
+            current_statement_begin__ = 256;
+            lp_accum__.add(-(pp_lognc(a0, a0vec, lognca0, pstream__)));
+            current_statement_begin__ = 257;
+            lp_accum__.add(inv_gamma_log<propto__>(dispersion, disp_shape, disp_scale));
+            current_statement_begin__ = 258;
+            lp_accum__.add(multi_normal_log<propto__>(beta, beta0, Sigma0));
+            current_statement_begin__ = 259;
             if (as_bool((primitive_value(logical_neq(a0_shape1, 1)) || primitive_value(logical_neq(a0_shape2, 1))))) {
-                current_statement_begin__ = 256;
+                current_statement_begin__ = 260;
                 lp_accum__.add(beta_log<propto__>(a0, a0_shape1, a0_shape2));
             }
-            current_statement_begin__ = 258;
-            lp_accum__.add(-(pp_lognc(a0, a0vec, lognca0, pstream__)));
-            current_statement_begin__ = 259;
-            lp_accum__.add(gamma_log<propto__>(invdisp, invdisp_shape, invdisp_rate));
-            current_statement_begin__ = 260;
-            lp_accum__.add(multi_normal_log<propto__>(beta, beta0, Sigma0));
-            current_statement_begin__ = 261;
-            lp_accum__.add(normal_glm_pp_lp(y0, a0, eta0, phi, link, lp__, lp_accum__, pstream__));
-            current_statement_begin__ = 262;
-            lp_accum__.add(normal_glm_pp_lp(y, 1.0, eta, phi, link, lp__, lp_accum__, pstream__));
+            current_statement_begin__ = 263;
+            if (as_bool((primitive_value(logical_eq(link, 1)) && primitive_value(logical_eq(incl_offset, 0))))) {
+                current_statement_begin__ = 264;
+                lp_accum__.add((a0 * normal_id_glm_log(y0vec, X0, 0, beta, sigma)));
+                current_statement_begin__ = 265;
+                lp_accum__.add(normal_id_glm_log(yvec, X, 0, beta, sigma));
+            } else {
+                current_statement_begin__ = 269;
+                stan::math::assign(eta, multiply(X, beta));
+                current_statement_begin__ = 270;
+                stan::math::assign(eta0, multiply(X0, beta0));
+                current_statement_begin__ = 271;
+                if (as_bool(logical_eq(incl_offset, 1))) {
+                    current_statement_begin__ = 272;
+                    stan::math::assign(eta, add(eta, offset));
+                    current_statement_begin__ = 273;
+                    stan::math::assign(eta0, add(eta0, offset0));
+                }
+                current_statement_begin__ = 275;
+                if (as_bool(logical_eq(link, 1))) {
+                    current_statement_begin__ = 276;
+                    lp_accum__.add((a0 * normal_log(y0, eta0, sigma)));
+                    current_statement_begin__ = 277;
+                    lp_accum__.add(normal_log(y, eta, sigma));
+                } else {
+                    current_statement_begin__ = 280;
+                    stan::math::assign(mu, linkinv(eta, link, pstream__));
+                    current_statement_begin__ = 281;
+                    stan::math::assign(mu0, linkinv(eta0, link, pstream__));
+                    current_statement_begin__ = 282;
+                    lp_accum__.add((a0 * normal_log(y0, mu0, sigma)));
+                    current_statement_begin__ = 283;
+                    lp_accum__.add(normal_log(y, mu, sigma));
+                }
+            }
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -964,7 +1008,7 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("beta");
-        names__.push_back("invdisp");
+        names__.push_back("dispersion");
         names__.push_back("a0");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
@@ -997,8 +1041,8 @@ public:
         for (size_t j_1__ = 0; j_1__ < beta_j_1_max__; ++j_1__) {
             vars__.push_back(beta(j_1__));
         }
-        double invdisp = in__.scalar_lb_constrain(0);
-        vars__.push_back(invdisp);
+        double dispersion = in__.scalar_lb_constrain(0);
+        vars__.push_back(dispersion);
         double a0 = in__.scalar_lub_constrain(0, 1);
         vars__.push_back(a0);
         double lp__ = 0.0;
@@ -1047,7 +1091,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "invdisp";
+        param_name_stream__ << "dispersion";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "a0";
@@ -1068,7 +1112,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "invdisp";
+        param_name_stream__ << "dispersion";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "a0";

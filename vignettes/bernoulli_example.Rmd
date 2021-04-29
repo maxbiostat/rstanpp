@@ -73,10 +73,12 @@ but in small samples, bridge sampling may be more accurate. Thus, it is useful t
 We will take $M = 2000$ importance samples using a normal importance density utilizing the posterior mode and negative inverse Hessian.
 
 For bridge sampling, we use Stan to obtain 1500 samples from the power prior density (after a warmup of 500). 
-```{r lognc_compare}
+```{r lognc_compare, fig.height = 5, fig.width = 7}
 ## obtain estimate of lognc of prior
 a0.lognc.importance = logncpp_glm(formula = y ~ x, family = binomial(), histdata = histdata, a0 = 20, method = 'importance', nsmpl = 2000)
-a0.lognc.bridge     = logncpp_glm(formula = y ~ x, family = binomial(), histdata = histdata, a0 = 20, method = 'bridge', iter = 2000, warmup = 500)
+a0.lognc.bridge     = suppressMessages(
+  logncpp_glm(formula = y ~ x, family = binomial(), histdata = histdata, a0 = 20, method = 'bridge', iter = 2000, warmup = 500, refresh = 0)
+)
 
 plot(a0.lognc.importance, type = 'l')
 lines(a0.lognc.bridge, col = 'red')
@@ -88,13 +90,13 @@ sampling because it is much quicker. Specifically, we will utilize importance sa
 for fine grid of $500$ values of $a_0$.
 
 ```{r lognc_importance}
-a0.lognc = logncpp_glm(formula = formula, family = binomial(), histdata = histdata, a0 = 500, method = 'importance', nsmpl = 2000)
+a0.lognc = logncpp_glm(formula = y ~ x, family = binomial(), histdata = histdata, a0 = 500, method = 'importance', nsmpl = 1000)
 head(a0.lognc)
 ```
 
 Seeking a smooth estimate of the log normalizing constant, we create an even finer grid of $20,000$ values of $a_0$, using a LOESS curve to 
 give an accurate prediction of the log normalizing constant for each of the values
-```{r lognc_loess}
+```{r lognc_loess, fig.height = 5, fig.width = 7}
 fit.loess  = loess(formula = lognc ~ a0, data = data.frame(a0.lognc), span = 0.10)
 a0.grid    = seq(0, 1, length.out = 20000)
 lognc.grid = predict(fit.loess, a0.grid)
@@ -112,9 +114,9 @@ treating $a_0$ as random.
 ## Obtaining posterior samples utilizing the normalized power prior
 Finally, we may obtain posterior samples using both the current and historical data sets. This is
 done through the function `glm_npp`.
-```{r npp_sample}
+```{r npp_sample, fig.height = 5, fig.width = 7}
 ## Use the grid to perform sampling on normalized power prior
-fit.npp = glm_npp(formula = formula, family = binomial(), data = data, histdata = histdata, a0.lognc = lognc.grid, chains = 1, iter = 10000, warmup = 1000)
+fit.npp = glm_npp(formula = y ~ x, family = binomial(), data = data, histdata = histdata, a0.lognc = lognc.grid, chains = 1, iter = 10000, warmup = 1000)
 plot(fit.npp)
 summary(fit.npp)
 ```

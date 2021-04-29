@@ -12,8 +12,8 @@
 #' @param beta0           mean for initial prior on regression coefficients. Defaults to vector of 0s
 #' @param Sigma0          covariance matrix for initial prior on regression coefficients. Defaults to \code{diag(100, ncol(X))}
 #' @param offset          offset in GLM. If \code{NULL}, no offset is utilized
-#' @param invdisp.shape   shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
-#' @param invdisp.rate    rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.shape      shape parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.scale      scale parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
 #' @param ...             optional parameters to pass onto `rstan::sampling`
 #'
 #' @return an object of class [rstan::stanfit] returned by `rstan::sampling`
@@ -21,7 +21,7 @@
 #' N = 50
 #' @export
 glm_npp_prior = function(
-  formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, invdisp.shape = 1.5, invdisp.rate = .25, ...
+  formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, disp.shape = 1e-4, disp.scale = 1e-4, ...
 ) {
   ## get design matrix
   X = model.matrix(formula, histdata)
@@ -34,25 +34,6 @@ glm_npp_prior = function(
   links = c('identity', 'log', 'logit', 'inverse', 'probit', 'cauchit', 'cloglog', 'sqrt', '1/mu^2')
   mu_link = which(links == family$link)[1]
   if ( length(mu_link) == 0 ) { stop(paste('Link must be one of', paste(links, collapse = ', '))) }
-
-  ## get distribution as integer
-  dist = family$family
-  
-  
-  # ## if distribution is binomial but not bernoulli, set as 5
-  # if ( dist == 2 & any(y0 > 1) ) {
-  #   dist = 5
-  # }
-  # if ( dist == 5 ) {
-  #   stop("Binomial models with multiple trials are not currently supported. De-collapse data and run as Bernoulli model.")
-  # }
-  
-  # if ( is.null(weights) ) {
-  #   weights = rep(1, length(y0))
-  # }
-  # if ( length(y0) != length(weights) ) {
-  #   stop("weight must have same length as data")
-  # }
   
   incl_offset = 1
   if ( is.null(offset) ) {
@@ -83,7 +64,7 @@ glm_npp_prior = function(
   )
   
   if ( family$family %in% c("gaussian", "Gamma") ) {
-    standat = c(standat, 'invdisp_shape' = invdisp.shape, 'invdisp_rate' = invdisp.rate)
+    standat = c(standat, 'disp_shape' = disp.shape, 'disp_scale' = disp.scale)
   }
 
   ## call stan and return stanobject

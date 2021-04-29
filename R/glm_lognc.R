@@ -15,14 +15,17 @@
 #' @param beta0           mean for initial prior on regression coefficients. Defaults to vector of 0s
 #' @param Sigma0          covariance matrix for initial prior on regression coefficients. Defaults to \code{diag(100, ncol(X))}
 #' @param offset          offset in GLM. If \code{NULL}, no offset is utilized
-#' @param invdisp.shape   shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
-#' @param invdisp.rate    rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.shape      shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.scale      rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param method          character vector giving which method to use for importance sampling. Acceptable values are `"bridge"` or`"importance"`, corresponding to bridge sampling and importance sampling, respectively
 #' @param nsmpl           (optional) number of importance samples to take (ignored if \code{method == 'bridge'})
 #' @param bridge.args     (optional) parameters to pass onto `bridgesampling::bridge_sampler` (otherwise, default is performed) (ignored if \code{method == 'importance'})
 #' @param ...             (optional) parameters to pass onto `rstan::sampling` (ignored if \code{method == 'importance'})
 #' 
 #' @export
-logncpp_glm = function(formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, invdisp.shape = 1.5, invdisp.rate = .25, method = 'bridge', nsmpl = 1000, bridge.args = NULL, ...) {
+logncpp_glm = function(formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, disp.shape = 2.1, disp.scale = 1.1, method = 'bridge', nsmpl = 1000, bridge.args = NULL, ...) {
+  ## check method
+  if (!(method %in% c('bridge', 'importance'))) stop('method must be "bridge" or "importance"')
   ## if input is a positive integer > 1, create equally-spaced grid of values between 0-1 of length a0
   if (length(a0) == 1 & a0%%1 == 0 & a0 > 1) {
     a0 = seq(0, 1, length.out = a0)
@@ -32,12 +35,12 @@ logncpp_glm = function(formula, family, histdata, a0, beta0 = NULL, Sigma0 = NUL
   lognc = numeric(length(a0))
   if ( method == 'bridge' ) {
     for ( i in seq_along(a0) ) {
-      lognc[i] = logncpp_glm_bridge(formula, family, histdata, a0[i], beta0, Sigma0, offset, invdisp.shape, invdisp, bridge.args, ...)
+      lognc[i] = logncpp_glm_bridge(formula, family, histdata, a0[i], beta0, Sigma0, offset, disp.shape, disp.scale, bridge.args, ...)
     }
   }
   if ( method == 'importance' ){
     for ( i in seq_along(a0) ) {
-      lognc[i] = logncpp_glm_importance(formula, family, histdata, a0[i], beta0, Sigma0, offset, invdisp.shape, invdisp.rate, nsmpl = nsmpl)
+      lognc[i] = logncpp_glm_importance(formula, family, histdata, a0[i], beta0, Sigma0, offset, disp.shape, disp.scale, nsmpl = nsmpl)
     }
   }
   ## result is a data.frame giving (a0, lognc)
@@ -62,13 +65,13 @@ logncpp_glm = function(formula, family, histdata, a0, beta0 = NULL, Sigma0 = NUL
 #' @param beta0           mean for initial prior on regression coefficients. Defaults to vector of 0s
 #' @param Sigma0          covariance matrix for initial prior on regression coefficients. Defaults to \code{diag(100, ncol(X))}
 #' @param offset          offset in GLM. If \code{NULL}, no offset is utilized
-#' @param invdisp.shape   shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
-#' @param invdisp.rate    rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.shape      shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.scale      rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
 #' @param bridge.args     (optional) parameters to pass onto `bridgesampling::bridge_sampler` (otherwise, default is performed)
 #' @param ...             (optional) parameters to pass onto `rstan::sampling`
-logncpp_glm_bridge = function(formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, invdisp.shape = 1.5, invdisp.rate = .25, bridge.args = NULL, ...) {
+logncpp_glm_bridge = function(formula, family, histdata, a0, beta0, Sigma0, offset, disp.shape, disp.scale, bridge.args = NULL, ...) {
   fit = glm_npp_prior(
-    formula, family, histdata = histdata, a0 = a0, ...
+    formula, family, histdata = histdata, a0 = a0, beta0 = beta0, Sigma0 = Sigma0, offset = offset, disp.shape = disp.shape, disp.scale = disp.scale, ...
   )
   if ( is.null(bridge.args) ) {
     res = bridgesampling::bridge_sampler(fit)
@@ -96,13 +99,13 @@ logncpp_glm_bridge = function(formula, family, histdata, a0, beta0 = NULL, Sigma
 #' @param beta0           mean for initial prior on regression coefficients. Defaults to vector of 0s
 #' @param Sigma0          covariance matrix for initial prior on regression coefficients. Defaults to \code{diag(100, ncol(X))}
 #' @param offset          offset in GLM. If \code{NULL}, no offset is utilized
-#' @param invdisp.shape   shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
-#' @param invdisp.rate    rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.shape      shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.scale      rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
 #' @param nsmpl           number of importance samples to take
 #' 
 #' @return scalar giving log normalizing constant
 #' @export
-logncpp_glm_importance = function(formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, invdisp.shape = 1.5, invdisp.rate = .25, nsmpl = 1000) {
+logncpp_glm_importance = function(formula, family, histdata, a0, beta0, Sigma0, offset, disp.shape, disp.scale, nsmpl) {
   ## get design matrix
   X = model.matrix(formula, histdata)
   
@@ -148,7 +151,7 @@ logncpp_glm_importance = function(formula, family, histdata, a0, beta0 = NULL, S
   )
   
   if ( family$family %in% c("gaussian", "Gamma") ) {
-    standat = c(standat, 'invdisp_shape' = invdisp.shape, 'invdisp_rate' = invdisp.rate)
+    standat = c(standat, 'disp_shape' = disp.shape, 'disp_scale' = disp.scale)
   }
   
   ## call stan and return stanobject

@@ -25,21 +25,21 @@ data {
   real                  lognca0[K];    // array of lognc evaluated at a0vec
   real<lower=0>         a0_shape1;     // shape 1 parameter for beta prior on a0
   real<lower=0>         a0_shape2;     // shape 2 parameter for beta prior on a0
-  real<lower=0>         invdisp_shape; // shape parameter for gamma prior on inverse dispersion
-  real<lower=0>         invdisp_rate;  // rate parameter on gamma prior for inverse dispersion
+  real<lower=0>         disp_shape;    // shape parameter for inverse-gamma prior on inverse dispersion
+  real<lower=0>         disp_scale;    // rate parameter on inverse-gamma prior for inverse dispersion
 }
 
 // Two parameters: regression coefficient and power prior param
 parameters {
   vector[p] beta;
-  real<lower=0> invdisp;
+  real<lower=0> dispersion;
   real<lower=0,upper=1> a0;
 }
 
 model {
-  // get phi = 1 / invdisp
-  real phi = inv(invdisp);
-  
+  real alpha = inv(dispersion);
+  vector[N]  mu;
+  vector[N0] mu0;
   // obtain linear predictor (adding offset if applicable)
   vector[N0] eta0 = X0 * beta;
   vector[N]  eta  = X  * beta;
@@ -48,13 +48,20 @@ model {
     eta  = eta  + offset;
   }
   
+  // compute means
+  mu  = linkinv(X * beta, link);
+  mu0 = linkinv(X0 * beta, link);
+  
+  // prior for beta is MVN and for dispersion is inverse-gamma
+
+  
   // add on beta prior for a0 if shape parameters are not 1; otherwise U(0,1) assumed
   if ( a0_shape1 != 1 || a0_shape2 != 1 ) {
     a0 ~ beta(a0_shape1, a0_shape2);
   }
-  target  += -pp_lognc(a0, a0vec, lognca0);
-  invdisp ~  gamma(invdisp_shape, invdisp_rate);
-  beta    ~  multi_normal(beta0, Sigma0);
-  target  += gamma_glm_pp_lp(y0, a0, eta0, phi, link);
-  target  += gamma_glm_pp_lp(y,  a0, eta , phi, link);
+  beta       ~ multi_normal(beta0, Sigma0);                      // initial prior on beta is MVN
+  dispersion ~ inv_gamma(disp_shape, disp_scale);                // initial prior on dispersion is inverse-gamma
+  target     += -pp_lognc(a0, a0vec, lognca0);                   // log nc for power prior
+  target     += a0 * gamma_lpdf(y0 | alpha, alpha * inv(mu0));   // power prior
+  target     += gamma_lpdf(y | alpha, alpha * inv(mu));          // likelihood
 }

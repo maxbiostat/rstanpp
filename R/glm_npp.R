@@ -14,8 +14,8 @@
 #' @param beta0           mean for initial prior on regression coefficients. Defaults to vector of 0s
 #' @param Sigma0          covariance matrix for initial prior on regression coefficients. Defaults to \code{diag(100, ncol(X))}
 #' @param offset          offset in GLM. If \code{NULL}, no offset is utilized
-#' @param invdisp.shape   shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
-#' @param invdisp.rate    rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.shape      shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.scale      rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models
 #' @param a0.shape1       shape1 parameter for beta prior on the power prior parameter. When `a0.shape1==1` and `a0.shape2==1`, a uniform prior is utilized
 #' @param a0.shape2       shape2 parameter for beta prior on the power prior parameter. When `a0.shape1==1` and `a0.shape2==1`, a uniform prior is utilized
 #' @param ...             optional parameters to pass onto `rstan::sampling`
@@ -25,7 +25,7 @@
 #' N = 50
 #' @export
 glm_npp = function(
-  formula, family, data, histdata, a0.lognc, beta0 = NULL, Sigma0 = NULL, offset = NULL, invdisp.shape = 1.5, invdisp.rate = .25, a0.shape1 = 1, a0.shape2 = 1, ...
+  formula, family, data, histdata, a0.lognc, beta0 = NULL, Sigma0 = NULL, offset = NULL, disp.shape = 1.5, disp.scale = .25, a0.shape1 = 1, a0.shape2 = 1, ...
 ) {
   ## make sure formula is two-sided
   if(!(formula.tools::is.two.sided(formula))) {
@@ -101,7 +101,7 @@ glm_npp = function(
   )
   
   if ( family$family %in% c("gaussian", "Gamma") ) {
-    standat = c(standat, 'invdisp_shape' = invdisp.shape, 'invdisp_rate' = invdisp.rate)
+    standat = c(standat, 'disp_shape' = disp.shape, 'disp_scale' = disp.scale)
   }
   
   ## call stan and return stanobject

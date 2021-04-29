@@ -35,25 +35,38 @@ parameters {
 
 model {
   // obtain linear predictor (adding offset if applicable)
-  vector[N0] eta0 = X0 * beta;
-  vector[N]  eta  = X  * beta;
-  if (incl_offset == 1) {
-    eta0 = eta0 + offset0;
-    eta  = eta  + offset;
-  }
-  // initial prior is MVN(beta0, Sigma0)
-  beta ~ multi_normal(beta0, Sigma0);
+  vector[( (link != 3) || (incl_offset == 1) ) ? N :  0] eta;
+  vector[( (link != 3) || (incl_offset == 1) ) ? N0 :  0] eta0;
+  vector[(link != 3) ? N :  0] mu;
+  vector[(link != 3) ? N0 :  0] mu0;
   
-  // increment target log probability by a0 * loglik of historical data
-  target += bernoulli_glm_pp_lp(y0, a0, eta0, link);
-  
-  // increment target log probability by -lognc closest to a0
+  // add to target initial prior and log nc for power prior
+  beta    ~ multi_normal(beta0, Sigma0);
   target += -pp_lognc(a0, a0vec, lognca0);
-  
-  // add on beta prior for a0 if shape parameters are not 1; otherwise U(0,1) assumed
-  if ( a0_shape1 != 1 || a0_shape2 != 1 ) {
+  if ( a0_shape1 != 1 || a0_shape2 != 1 )
     a0 ~ beta(a0_shape1, a0_shape2);
+  
+  // add log likelihood and power prior--using the best stan function available per scenario
+  if ( link == 3 && incl_offset == 0 ) {
+    target += a0 * bernoulli_logit_glm_lpmf(y0 | X0, 0, beta);
+    target += bernoulli_logit_glm_lpmf(y | X, 0, beta);
   }
-  // add on likelihood for current data
-  target += bernoulli_glm_pp_lp(y, 1.0, eta, link);
+  else {
+    eta  = X  * beta;
+    eta0 = X0 * beta0; 
+    if ( incl_offset == 1 ){
+      eta  += offset;
+      eta0 += offset0;
+    }
+    if ( link == 3 ) {
+      target += a0 * bernoulli_logit_lpmf(y0 | eta0);
+      target += bernoulli_logit_lpmf(y | eta);
+    }
+    else {
+      mu  = linkinv(eta, link);
+      mu0 = linkinv(eta0, link);
+      target += a0 * bernoulli_lpmf(y0 | mu0);
+      target += bernoulli_lpmf(y | mu);
+    }
+  }
 }

@@ -9,12 +9,12 @@ logncpp_glm_importance(
   family,
   histdata,
   a0,
-  beta0 = NULL,
-  Sigma0 = NULL,
-  offset = NULL,
-  invdisp.shape = 1.5,
-  invdisp.rate = 0.25,
-  nsmpl = 1000
+  beta0,
+  Sigma0,
+  offset,
+  disp.shape,
+  disp.scale,
+  nsmpl
 )
 }
 \arguments{
@@ -32,9 +32,9 @@ logncpp_glm_importance(
 
 \item{offset}{offset in GLM. If \code{NULL}, no offset is utilized}
 
-\item{invdisp.shape}{shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.shape}{shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
-\item{invdisp.rate}{rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.scale}{rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
 \item{nsmpl}{number of importance samples to take}
 }

@@ -12,8 +12,8 @@ logncpp_glm(
   beta0 = NULL,
   Sigma0 = NULL,
   offset = NULL,
-  invdisp.shape = 1.5,
-  invdisp.rate = 0.25,
+  disp.shape = 2.1,
+  disp.scale = 1.1,
   method = "bridge",
   nsmpl = 1000,
   bridge.args = NULL,
@@ -35,9 +35,11 @@ logncpp_glm(
 
 \item{offset}{offset in GLM. If \code{NULL}, no offset is utilized}
 
-\item{invdisp.shape}{shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.shape}{shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
-\item{invdisp.rate}{rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.scale}{rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+
+\item{method}{character vector giving which method to use for importance sampling. Acceptable values are \code{"bridge"} or\code{"importance"}, corresponding to bridge sampling and importance sampling, respectively}
 
 \item{nsmpl}{(optional) number of importance samples to take (ignored if \code{method == 'bridge'})}
 

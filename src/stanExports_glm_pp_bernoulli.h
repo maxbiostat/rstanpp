@@ -41,7 +41,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(25, 0, "start", "/functions/glm_pp.stan");
     reader.add_event(152, 127, "end", "/functions/glm_pp.stan");
     reader.add_event(152, 4, "restart", "model_glm_pp_bernoulli");
-    reader.add_event(193, 43, "end", "model_glm_pp_bernoulli");
+    reader.add_event(201, 51, "end", "model_glm_pp_bernoulli");
     return reader;
 }
 template <typename T0__>
@@ -602,23 +602,43 @@ public:
                 beta = in__.vector_constrain(p);
             // model body
             {
-            current_statement_begin__ = 179;
-            validate_non_negative_index("eta", "nobs", nobs);
-            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(nobs);
+            current_statement_begin__ = 177;
+            validate_non_negative_index("eta", "((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? nobs : 0 )", ((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? nobs : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? nobs : 0 ));
             stan::math::initialize(eta, DUMMY_VAR__);
             stan::math::fill(eta, DUMMY_VAR__);
-            stan::math::assign(eta,multiply(X, beta));
-            current_statement_begin__ = 180;
-            if (as_bool(logical_eq(incl_offset, 1))) {
-                current_statement_begin__ = 181;
-                stan::math::assign(eta, add(eta, offset));
-            }
-            current_statement_begin__ = 185;
+            current_statement_begin__ = 178;
+            validate_non_negative_index("mu", "(logical_neq(link, 3) ? nobs : 0 )", (logical_neq(link, 3) ? nobs : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu((logical_neq(link, 3) ? nobs : 0 ));
+            stan::math::initialize(mu, DUMMY_VAR__);
+            stan::math::fill(mu, DUMMY_VAR__);
+            current_statement_begin__ = 181;
             lp_accum__.add(multi_normal_log<propto__>(beta, beta0, Sigma0));
-            current_statement_begin__ = 188;
+            current_statement_begin__ = 184;
             if (as_bool(logical_gt(a0, 0))) {
-                current_statement_begin__ = 189;
-                lp_accum__.add(bernoulli_glm_pp_lp(y0, a0, eta, link, lp__, lp_accum__, pstream__));
+                current_statement_begin__ = 185;
+                if (as_bool((primitive_value(logical_eq(link, 3)) && primitive_value(logical_eq(incl_offset, 0))))) {
+                    current_statement_begin__ = 186;
+                    lp_accum__.add((a0 * bernoulli_logit_glm_log(y0, X, 0, beta)));
+                } else {
+                    current_statement_begin__ = 188;
+                    stan::math::assign(eta, multiply(X, beta));
+                    current_statement_begin__ = 189;
+                    if (as_bool(logical_eq(incl_offset, 1))) {
+                        current_statement_begin__ = 190;
+                        stan::math::assign(eta, add(eta, offset));
+                    }
+                    current_statement_begin__ = 191;
+                    if (as_bool(logical_eq(link, 3))) {
+                        current_statement_begin__ = 192;
+                        lp_accum__.add((a0 * bernoulli_logit_log(y0, eta)));
+                    } else {
+                        current_statement_begin__ = 194;
+                        stan::math::assign(mu, linkinv(eta, link, pstream__));
+                        current_statement_begin__ = 195;
+                        lp_accum__.add((a0 * bernoulli_log(y0, mu)));
+                    }
+                }
             }
             }
         } catch (const std::exception& e) {

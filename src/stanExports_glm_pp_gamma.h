@@ -41,7 +41,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(25, 0, "start", "/functions/glm_pp.stan");
     reader.add_event(152, 127, "end", "/functions/glm_pp.stan");
     reader.add_event(152, 4, "restart", "model_glm_pp_gamma");
-    reader.add_event(192, 42, "end", "model_glm_pp_gamma");
+    reader.add_event(199, 49, "end", "model_glm_pp_gamma");
     return reader;
 }
 template <typename T0__>
@@ -391,8 +391,8 @@ private:
         double a0;
         vector_d beta0;
         matrix_d Sigma0;
-        double invdisp_shape;
-        double invdisp_rate;
+        double disp_shape;
+        double disp_scale;
         int link;
         int incl_offset;
         vector_d offset;
@@ -501,19 +501,19 @@ public:
                 }
             }
             current_statement_begin__ = 164;
-            context__.validate_dims("data initialization", "invdisp_shape", "double", context__.to_vec());
-            invdisp_shape = double(0);
-            vals_r__ = context__.vals_r("invdisp_shape");
+            context__.validate_dims("data initialization", "disp_shape", "double", context__.to_vec());
+            disp_shape = double(0);
+            vals_r__ = context__.vals_r("disp_shape");
             pos__ = 0;
-            invdisp_shape = vals_r__[pos__++];
-            check_greater_or_equal(function__, "invdisp_shape", invdisp_shape, 0);
+            disp_shape = vals_r__[pos__++];
+            check_greater_or_equal(function__, "disp_shape", disp_shape, 0);
             current_statement_begin__ = 165;
-            context__.validate_dims("data initialization", "invdisp_rate", "double", context__.to_vec());
-            invdisp_rate = double(0);
-            vals_r__ = context__.vals_r("invdisp_rate");
+            context__.validate_dims("data initialization", "disp_scale", "double", context__.to_vec());
+            disp_scale = double(0);
+            vals_r__ = context__.vals_r("disp_scale");
             pos__ = 0;
-            invdisp_rate = vals_r__[pos__++];
-            check_greater_or_equal(function__, "invdisp_rate", invdisp_rate, 0);
+            disp_scale = vals_r__[pos__++];
+            check_greater_or_equal(function__, "disp_scale", disp_scale, 0);
             current_statement_begin__ = 166;
             context__.validate_dims("data initialization", "link", "int", context__.to_vec());
             link = int(0);
@@ -586,17 +586,17 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta: ") + e.what()), current_statement_begin__, prog_reader__());
         }
         current_statement_begin__ = 174;
-        if (!(context__.contains_r("invdisp")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable invdisp missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("invdisp");
+        if (!(context__.contains_r("dispersion")))
+            stan::lang::rethrow_located(std::runtime_error(std::string("Variable dispersion missing")), current_statement_begin__, prog_reader__());
+        vals_r__ = context__.vals_r("dispersion");
         pos__ = 0U;
-        context__.validate_dims("parameter initialization", "invdisp", "double", context__.to_vec());
-        double invdisp(0);
-        invdisp = vals_r__[pos__++];
+        context__.validate_dims("parameter initialization", "dispersion", "double", context__.to_vec());
+        double dispersion(0);
+        dispersion = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0, invdisp);
+            writer__.scalar_lb_unconstrain(0, dispersion);
         } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable invdisp: ") + e.what()), current_statement_begin__, prog_reader__());
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable dispersion: ") + e.what()), current_statement_begin__, prog_reader__());
         }
         params_r__ = writer__.data_r();
         params_i__ = writer__.data_i();
@@ -631,37 +631,48 @@ public:
             else
                 beta = in__.vector_constrain(p);
             current_statement_begin__ = 174;
-            local_scalar_t__ invdisp;
-            (void) invdisp;  // dummy to suppress unused var warning
+            local_scalar_t__ dispersion;
+            (void) dispersion;  // dummy to suppress unused var warning
             if (jacobian__)
-                invdisp = in__.scalar_lb_constrain(0, lp__);
+                dispersion = in__.scalar_lb_constrain(0, lp__);
             else
-                invdisp = in__.scalar_lb_constrain(0);
+                dispersion = in__.scalar_lb_constrain(0);
             // model body
             {
             current_statement_begin__ = 180;
-            local_scalar_t__ phi(DUMMY_VAR__);
-            (void) phi;  // dummy to suppress unused var warning
-            stan::math::initialize(phi, DUMMY_VAR__);
-            stan::math::fill(phi, DUMMY_VAR__);
-            stan::math::assign(phi,inv(invdisp));
-            current_statement_begin__ = 181;
             validate_non_negative_index("eta", "nobs", nobs);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(nobs);
             stan::math::initialize(eta, DUMMY_VAR__);
             stan::math::fill(eta, DUMMY_VAR__);
-            stan::math::assign(eta,multiply(X, beta));
+            current_statement_begin__ = 181;
+            validate_non_negative_index("mu", "nobs", nobs);
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(nobs);
+            stan::math::initialize(mu, DUMMY_VAR__);
+            stan::math::fill(mu, DUMMY_VAR__);
+            current_statement_begin__ = 182;
+            local_scalar_t__ alpha(DUMMY_VAR__);
+            (void) alpha;  // dummy to suppress unused var warning
+            stan::math::initialize(alpha, DUMMY_VAR__);
+            stan::math::fill(alpha, DUMMY_VAR__);
+            stan::math::assign(alpha,inv(dispersion));
             current_statement_begin__ = 183;
-            if (as_bool(logical_eq(incl_offset, 1))) {
-                current_statement_begin__ = 184;
-                stan::math::assign(eta, add(eta, offset));
-            }
-            current_statement_begin__ = 187;
-            lp_accum__.add(gamma_log<propto__>(invdisp, invdisp_shape, invdisp_rate));
-            current_statement_begin__ = 188;
             lp_accum__.add(multi_normal_log<propto__>(beta, beta0, Sigma0));
-            current_statement_begin__ = 189;
-            lp_accum__.add(gamma_glm_pp_lp(y0, a0, eta, phi, link, lp__, lp_accum__, pstream__));
+            current_statement_begin__ = 184;
+            lp_accum__.add(inv_gamma_log<propto__>(dispersion, disp_shape, disp_scale));
+            current_statement_begin__ = 187;
+            if (as_bool(logical_gt(a0, 0))) {
+                current_statement_begin__ = 189;
+                stan::math::assign(eta, multiply(X, beta));
+                current_statement_begin__ = 190;
+                if (as_bool(logical_eq(incl_offset, 1))) {
+                    current_statement_begin__ = 191;
+                    stan::math::assign(eta, add(eta, offset));
+                }
+                current_statement_begin__ = 194;
+                stan::math::assign(mu, linkinv(eta, link, pstream__));
+                current_statement_begin__ = 195;
+                lp_accum__.add((a0 * gamma_log(y0, alpha, multiply(alpha, inv(mu)))));
+            }
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -684,7 +695,7 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("beta");
-        names__.push_back("invdisp");
+        names__.push_back("dispersion");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -714,8 +725,8 @@ public:
         for (size_t j_1__ = 0; j_1__ < beta_j_1_max__; ++j_1__) {
             vars__.push_back(beta(j_1__));
         }
-        double invdisp = in__.scalar_lb_constrain(0);
-        vars__.push_back(invdisp);
+        double dispersion = in__.scalar_lb_constrain(0);
+        vars__.push_back(dispersion);
         double lp__ = 0.0;
         (void) lp__;  // dummy to suppress unused var warning
         stan::math::accumulator<double> lp_accum__;
@@ -762,7 +773,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "invdisp";
+        param_name_stream__ << "dispersion";
         param_names__.push_back(param_name_stream__.str());
         if (!include_gqs__ && !include_tparams__) return;
         if (include_tparams__) {
@@ -780,7 +791,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "invdisp";
+        param_name_stream__ << "dispersion";
         param_names__.push_back(param_name_stream__.str());
         if (!include_gqs__ && !include_tparams__) return;
         if (include_tparams__) {

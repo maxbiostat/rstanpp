@@ -9,11 +9,11 @@ logncpp_glm_bridge(
   family,
   histdata,
   a0,
-  beta0 = NULL,
-  Sigma0 = NULL,
-  offset = NULL,
-  invdisp.shape = 1.5,
-  invdisp.rate = 0.25,
+  beta0,
+  Sigma0,
+  offset,
+  disp.shape,
+  disp.scale,
   bridge.args = NULL,
   ...
 )
@@ -33,9 +33,9 @@ logncpp_glm_bridge(
 
 \item{offset}{offset in GLM. If \code{NULL}, no offset is utilized}
 
-\item{invdisp.shape}{shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.shape}{shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
-\item{invdisp.rate}{rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.scale}{rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
 \item{bridge.args}{(optional) parameters to pass onto \code{bridgesampling::bridge_sampler} (otherwise, default is performed)}
 

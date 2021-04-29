@@ -13,8 +13,8 @@ glm_npp(
   beta0 = NULL,
   Sigma0 = NULL,
   offset = NULL,
-  invdisp.shape = 1.5,
-  invdisp.rate = 0.25,
+  disp.shape = 1.5,
+  disp.scale = 0.25,
   a0.shape1 = 1,
   a0.shape2 = 1,
   ...
@@ -37,9 +37,9 @@ glm_npp(
 
 \item{offset}{offset in GLM. If \code{NULL}, no offset is utilized}
 
-\item{invdisp.shape}{shape parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.shape}{shape parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
-\item{invdisp.rate}{rate parameter for inverse dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.scale}{rate parameter for inverse-gamma prior on dispersion parameter (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
 \item{a0.shape1}{shape1 parameter for beta prior on the power prior parameter. When \code{a0.shape1==1} and \code{a0.shape2==1}, a uniform prior is utilized}
 

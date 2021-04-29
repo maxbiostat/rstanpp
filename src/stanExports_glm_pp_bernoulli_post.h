@@ -45,7 +45,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(152, 0, "start", "/functions/finda0closest.stan");
     reader.add_event(208, 56, "end", "/functions/finda0closest.stan");
     reader.add_event(208, 5, "restart", "model_glm_pp_bernoulli_post");
-    reader.add_event(264, 59, "end", "model_glm_pp_bernoulli_post");
+    reader.add_event(277, 72, "end", "model_glm_pp_bernoulli_post");
     return reader;
 }
 template <typename T0__>
@@ -875,37 +875,69 @@ public:
             // model body
             {
             current_statement_begin__ = 241;
-            validate_non_negative_index("eta0", "N0", N0);
-            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta0(N0);
-            stan::math::initialize(eta0, DUMMY_VAR__);
-            stan::math::fill(eta0, DUMMY_VAR__);
-            stan::math::assign(eta0,multiply(X0, beta));
-            current_statement_begin__ = 242;
-            validate_non_negative_index("eta", "N", N);
-            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(N);
+            validate_non_negative_index("eta", "((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? N : 0 )", ((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? N : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? N : 0 ));
             stan::math::initialize(eta, DUMMY_VAR__);
             stan::math::fill(eta, DUMMY_VAR__);
-            stan::math::assign(eta,multiply(X, beta));
+            current_statement_begin__ = 242;
+            validate_non_negative_index("eta0", "((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? N0 : 0 )", ((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? N0 : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta0(((primitive_value(logical_neq(link, 3)) || primitive_value(logical_eq(incl_offset, 1))) ? N0 : 0 ));
+            stan::math::initialize(eta0, DUMMY_VAR__);
+            stan::math::fill(eta0, DUMMY_VAR__);
             current_statement_begin__ = 243;
-            if (as_bool(logical_eq(incl_offset, 1))) {
-                current_statement_begin__ = 244;
-                stan::math::assign(eta0, add(eta0, offset0));
-                current_statement_begin__ = 245;
-                stan::math::assign(eta, add(eta, offset));
-            }
-            current_statement_begin__ = 248;
+            validate_non_negative_index("mu", "(logical_neq(link, 3) ? N : 0 )", (logical_neq(link, 3) ? N : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu((logical_neq(link, 3) ? N : 0 ));
+            stan::math::initialize(mu, DUMMY_VAR__);
+            stan::math::fill(mu, DUMMY_VAR__);
+            current_statement_begin__ = 244;
+            validate_non_negative_index("mu0", "(logical_neq(link, 3) ? N0 : 0 )", (logical_neq(link, 3) ? N0 : 0 ));
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu0((logical_neq(link, 3) ? N0 : 0 ));
+            stan::math::initialize(mu0, DUMMY_VAR__);
+            stan::math::fill(mu0, DUMMY_VAR__);
+            current_statement_begin__ = 247;
             lp_accum__.add(multi_normal_log<propto__>(beta, beta0, Sigma0));
-            current_statement_begin__ = 251;
-            lp_accum__.add(bernoulli_glm_pp_lp(y0, a0, eta0, link, lp__, lp_accum__, pstream__));
-            current_statement_begin__ = 254;
+            current_statement_begin__ = 248;
             lp_accum__.add(-(pp_lognc(a0, a0vec, lognca0, pstream__)));
-            current_statement_begin__ = 257;
+            current_statement_begin__ = 249;
             if (as_bool((primitive_value(logical_neq(a0_shape1, 1)) || primitive_value(logical_neq(a0_shape2, 1))))) {
-                current_statement_begin__ = 258;
+                current_statement_begin__ = 250;
                 lp_accum__.add(beta_log<propto__>(a0, a0_shape1, a0_shape2));
             }
-            current_statement_begin__ = 261;
-            lp_accum__.add(bernoulli_glm_pp_lp(y, 1.0, eta, link, lp__, lp_accum__, pstream__));
+            current_statement_begin__ = 253;
+            if (as_bool((primitive_value(logical_eq(link, 3)) && primitive_value(logical_eq(incl_offset, 0))))) {
+                current_statement_begin__ = 254;
+                lp_accum__.add((a0 * bernoulli_logit_glm_log(y0, X0, 0, beta)));
+                current_statement_begin__ = 255;
+                lp_accum__.add(bernoulli_logit_glm_log(y, X, 0, beta));
+            } else {
+                current_statement_begin__ = 258;
+                stan::math::assign(eta, multiply(X, beta));
+                current_statement_begin__ = 259;
+                stan::math::assign(eta0, multiply(X0, beta0));
+                current_statement_begin__ = 260;
+                if (as_bool(logical_eq(incl_offset, 1))) {
+                    current_statement_begin__ = 261;
+                    stan::math::assign(eta, add(eta, offset));
+                    current_statement_begin__ = 262;
+                    stan::math::assign(eta0, add(eta0, offset0));
+                }
+                current_statement_begin__ = 264;
+                if (as_bool(logical_eq(link, 3))) {
+                    current_statement_begin__ = 265;
+                    lp_accum__.add((a0 * bernoulli_logit_log(y0, eta0)));
+                    current_statement_begin__ = 266;
+                    lp_accum__.add(bernoulli_logit_log(y, eta));
+                } else {
+                    current_statement_begin__ = 269;
+                    stan::math::assign(mu, linkinv(eta, link, pstream__));
+                    current_statement_begin__ = 270;
+                    stan::math::assign(mu0, linkinv(eta0, link, pstream__));
+                    current_statement_begin__ = 271;
+                    lp_accum__.add((a0 * bernoulli_log(y0, mu0)));
+                    current_statement_begin__ = 272;
+                    lp_accum__.add(bernoulli_log(y, mu));
+                }
+            }
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());

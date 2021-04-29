@@ -26,18 +26,26 @@ parameters {
 // Assume beta is a priori MVN; obtain posterior
 // based on power prior
 model {
+  vector[( (link != 3) || (incl_offset == 1) ) ? nobs :  0] eta;
+  vector[(link != 3) ? nobs :  0] mu;
   
-  // obtain linear predictor (adding offset if applicable)
-  vector[nobs] eta = X * beta;
-  if (incl_offset == 1) {
-    eta = eta + offset;
-  }
-  
-  // initial prior is MVN(beta0, Sigma0)
+  // initial prior is MVN for beta
   beta ~ multi_normal(beta0, Sigma0);
   
-  // increment target log probability by a0 * loglik of historical data
-  if(a0 > 0) {
-    target += bernoulli_glm_pp_lp(y0, a0, eta, link);
+  // add log power prior--using the best stan function available per scenario
+  if ( a0 > 0 ) {
+    if ( link == 3 && incl_offset == 0 )
+      target += a0 * bernoulli_logit_glm_lpmf(y0 | X, 0, beta);
+    else {
+      eta = X * beta;
+      if ( incl_offset == 1 )
+        eta += offset;
+      if ( link == 3 )
+        target += a0 * bernoulli_logit_lpmf(y0 | eta);
+      else {
+        mu = linkinv(eta, link);
+        target += a0 * bernoulli_lpmf(y0 | mu);
+      }
+    }
   }
 }

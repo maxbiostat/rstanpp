@@ -25,36 +25,59 @@ data {
   real                  lognca0[K];    // array of lognc evaluated at a0vec
   real<lower=0>         a0_shape1;     // shape 1 parameter for beta prior on a0
   real<lower=0>         a0_shape2;     // shape 2 parameter for beta prior on a0
-  real<lower=0>         invdisp_shape; // shape parameter for gamma prior on inverse dispersion
-  real<lower=0>         invdisp_rate;  // rate parameter on gamma prior for inverse dispersion
+  real<lower=0>         disp_shape; // shape parameter for gamma prior on inverse dispersion
+  real<lower=0>         disp_scale;  // rate parameter on gamma prior for inverse dispersion
+}
+
+transformed data {
+  vector[N0] y0vec = to_vector(y0);
+  vector[N]  yvec  = to_vector(y);
 }
 
 // Two parameters: regression coefficient and power prior param
 parameters {
   vector[p] beta;
-  real<lower=0> invdisp;
+  real<lower=0> dispersion;
   real<lower=0,upper=1> a0;
 }
 
 model {
-  // get phi = 1 / invdisp
-  real phi = inv(invdisp);
+  vector[( (link != 1) || (incl_offset == 1) ) ? N :  0] eta;
+  vector[( (link != 1) || (incl_offset == 1) ) ? N0 :  0] eta0;
+  vector[(link != 1) ? N :  0] mu;
+  vector[(link != 1) ? N0 :  0] mu0;
+  real sigma = sqrt(dispersion);
   
-  // obtain linear predictor (adding offset if applicable)
-  vector[N0] eta0 = X0 * beta;
-  vector[N]  eta  = X  * beta;
-  if (incl_offset == 1) {
-    eta0 = eta0 + offset0;
-    eta  = eta  + offset;
-  }
   
-  // add on beta prior for a0 if shape parameters are not 1; otherwise U(0,1) assumed
-  if ( a0_shape1 != 1 || a0_shape2 != 1 ) {
+  // add to target prior distributions and log nc
+  target     += -pp_lognc(a0, a0vec, lognca0);
+  dispersion ~  inv_gamma(disp_shape, disp_scale);
+  beta       ~  multi_normal(beta0, Sigma0);
+  if ( a0_shape1 != 1 || a0_shape2 != 1 )
     a0 ~ beta(a0_shape1, a0_shape2);
+  
+  // if no offset and identity link, use Stan GLM function
+  if ( link == 1 && incl_offset == 0 ) {
+    target += a0 * normal_id_glm_lpdf(y0vec | X0, 0, beta, sigma);
+    target += normal_id_glm_lpdf(yvec | X, 0, beta, sigma);
   }
-  target  += -pp_lognc(a0, a0vec, lognca0);
-  invdisp ~  gamma(invdisp_shape, invdisp_rate);
-  beta    ~  multi_normal(beta0, Sigma0);
-  target  += normal_glm_pp_lp(y0, a0, eta0, phi, link);
-  target  += normal_glm_pp_lp(y, 1.0, eta, phi, link);
+  // otherwise, compute linear predictor and add offset if necessary
+  else {
+    eta  = X  * beta;
+    eta0 = X0 * beta0;
+    if ( incl_offset == 1 ) {
+      eta  += offset;
+      eta0 += offset0;
+    }
+    if ( link == 1 ) {
+      target += a0 * normal_lpdf(y0 | eta0, sigma);
+      target += normal_lpdf(y | eta, sigma);
+    }
+    else {
+      mu  = linkinv(eta, link);
+      mu0 = linkinv(eta0, link);
+      target += a0 * normal_lpdf(y0 | mu0, sigma);
+      target += normal_lpdf(y | mu, sigma);
+    }
+  }
 }
