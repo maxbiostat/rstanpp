@@ -12,8 +12,8 @@
 #' @param beta0           mean for initial prior on regression coefficients. Defaults to vector of 0s
 #' @param Sigma0          covariance matrix for initial prior on regression coefficients. Defaults to \code{diag(100, ncol(X))}
 #' @param offset          offset in GLM. If \code{NULL}, no offset is utilized
-#' @param disp.shape      shape parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
-#' @param disp.scale      scale parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.thresh      shape parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
+#' @param disp.prob      scale parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models
 #' @param ...             optional parameters to pass onto `rstan::sampling`
 #'
 #' @return an object of class [rstan::stanfit] returned by `rstan::sampling`
@@ -21,7 +21,7 @@
 #' N = 50
 #' @export
 glm_npp_prior = function(
-  formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, disp.shape = 1e-4, disp.scale = 1e-4, ...
+  formula, family, histdata, a0, beta0 = NULL, Sigma0 = NULL, offset = NULL, disp.thresh = 1e-4, disp.prob = 1e-4, ...
 ) {
   ## get design matrix
   X = model.matrix(formula, histdata)
@@ -64,7 +64,8 @@ glm_npp_prior = function(
   )
   
   if ( family$family %in% c("gaussian", "Gamma") ) {
-    standat = c(standat, 'disp_shape' = disp.shape, 'disp_scale' = disp.scale)
+    standat = c(standat, 'disp_threshold' = disp.thresh,
+                'disp_probability' = disp.prob)
   }
 
   ## call stan and return stanobject
