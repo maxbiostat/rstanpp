@@ -37,11 +37,15 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(2, 0, "start", "/functions/link.stan");
     reader.add_event(25, 23, "end", "/functions/link.stan");
     reader.add_event(25, 3, "restart", "model_glm_pp_gaussian");
-    reader.add_event(25, 3, "include", "/functions/glm_pp.stan");
-    reader.add_event(25, 0, "start", "/functions/glm_pp.stan");
-    reader.add_event(152, 127, "end", "/functions/glm_pp.stan");
-    reader.add_event(152, 4, "restart", "model_glm_pp_gaussian");
-    reader.add_event(208, 58, "end", "model_glm_pp_gaussian");
+    reader.add_event(25, 3, "include", "/functions/PC_prior.stan");
+    reader.add_event(25, 0, "start", "/functions/PC_prior.stan");
+    reader.add_event(32, 7, "end", "/functions/PC_prior.stan");
+    reader.add_event(32, 4, "restart", "model_glm_pp_gaussian");
+    reader.add_event(32, 4, "include", "/functions/glm_pp.stan");
+    reader.add_event(32, 0, "start", "/functions/glm_pp.stan");
+    reader.add_event(159, 127, "end", "/functions/glm_pp.stan");
+    reader.add_event(159, 5, "restart", "model_glm_pp_gaussian");
+    reader.add_event(215, 59, "end", "model_glm_pp_gaussian");
     return reader;
 }
 template <typename T0__>
@@ -101,6 +105,60 @@ struct linkinv_functor__ {
         return linkinv(eta, mu_link, pstream__);
     }
 };
+template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type
+PC_lpdf(const T0__& x,
+            const T1__& S,
+            const T2__& p,
+            const T3__& a, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type local_scalar_t__;
+    typedef local_scalar_t__ fun_return_scalar_t__;
+    const static bool propto__ = true;
+    (void) propto__;
+        local_scalar_t__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+    int current_statement_begin__ = -1;
+    try {
+        {
+        current_statement_begin__ = 29;
+        local_scalar_t__ b(DUMMY_VAR__);
+        (void) b;  // dummy to suppress unused var warning
+        stan::math::initialize(b, DUMMY_VAR__);
+        stan::math::fill(b, DUMMY_VAR__);
+        stan::math::assign(b,(-(stan::math::log(p)) / S));
+        current_statement_begin__ = 30;
+        local_scalar_t__ ans(DUMMY_VAR__);
+        (void) ans;  // dummy to suppress unused var warning
+        stan::math::initialize(ans, DUMMY_VAR__);
+        stan::math::fill(ans, DUMMY_VAR__);
+        stan::math::assign(ans,(((stan::math::log(a) + stan::math::log(b)) + ((a - 1) * stan::math::log(x))) - (b * pow(x, a))));
+        current_statement_begin__ = 31;
+        return stan::math::promote_scalar<fun_return_scalar_t__>(ans);
+        }
+    } catch (const std::exception& e) {
+        stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
+        // Next line prevents compiler griping about no return
+        throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+    }
+}
+template <typename T0__, typename T1__, typename T2__, typename T3__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type
+PC_lpdf(const T0__& x,
+            const T1__& S,
+            const T2__& p,
+            const T3__& a, std::ostream* pstream__) {
+    return PC_lpdf<false>(x,S,p,a, pstream__);
+}
+struct PC_lpdf_functor__ {
+    template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__>
+        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__>::type
+    operator()(const T0__& x,
+            const T1__& S,
+            const T2__& p,
+            const T3__& a, std::ostream* pstream__) const {
+        return PC_lpdf(x, S, p, a, pstream__);
+    }
+};
 template <typename T1__, typename T2__, typename T_lp__, typename T_lp_accum__>
 typename boost::math::tools::promote_args<T1__, T2__, T_lp__>::type
 bernoulli_glm_pp_lp(const std::vector<int>& y,
@@ -116,28 +174,28 @@ bernoulli_glm_pp_lp(const std::vector<int>& y,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 38;
+        current_statement_begin__ = 45;
         int nobs(0);
         (void) nobs;  // dummy to suppress unused var warning
         stan::math::fill(nobs, std::numeric_limits<int>::min());
         stan::math::assign(nobs,num_elements(y));
-        current_statement_begin__ = 39;
+        current_statement_begin__ = 46;
         if (as_bool(logical_eq(link, 3))) {
-            current_statement_begin__ = 40;
+            current_statement_begin__ = 47;
             lp_accum__.add((a0 * bernoulli_logit_log(y, eta)));
         } else {
             {
-            current_statement_begin__ = 43;
+            current_statement_begin__ = 50;
             validate_non_negative_index("mu", "nobs", nobs);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(nobs);
             stan::math::initialize(mu, DUMMY_VAR__);
             stan::math::fill(mu, DUMMY_VAR__);
             stan::math::assign(mu,linkinv(eta, link, pstream__));
-            current_statement_begin__ = 44;
+            current_statement_begin__ = 51;
             lp_accum__.add((a0 * bernoulli_log(y, mu)));
             }
         }
-        current_statement_begin__ = 46;
+        current_statement_begin__ = 53;
         return stan::math::promote_scalar<fun_return_scalar_t__>(get_lp(lp__, lp_accum__));
         }
     } catch (const std::exception& e) {
@@ -172,28 +230,28 @@ binomial_glm_pp_lp(const std::vector<int>& y,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 62;
+        current_statement_begin__ = 69;
         int nobs(0);
         (void) nobs;  // dummy to suppress unused var warning
         stan::math::fill(nobs, std::numeric_limits<int>::min());
         stan::math::assign(nobs,num_elements(y));
-        current_statement_begin__ = 63;
+        current_statement_begin__ = 70;
         if (as_bool(logical_eq(link, 3))) {
-            current_statement_begin__ = 64;
+            current_statement_begin__ = 71;
             lp_accum__.add((a0 * binomial_logit_log(y, ntrials, eta)));
         } else {
             {
-            current_statement_begin__ = 67;
+            current_statement_begin__ = 74;
             validate_non_negative_index("mu", "nobs", nobs);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(nobs);
             stan::math::initialize(mu, DUMMY_VAR__);
             stan::math::fill(mu, DUMMY_VAR__);
             stan::math::assign(mu,linkinv(eta, link, pstream__));
-            current_statement_begin__ = 68;
+            current_statement_begin__ = 75;
             lp_accum__.add((a0 * binomial_log(y, ntrials, mu)));
             }
         }
-        current_statement_begin__ = 70;
+        current_statement_begin__ = 77;
         return stan::math::promote_scalar<fun_return_scalar_t__>(get_lp(lp__, lp_accum__));
         }
     } catch (const std::exception& e) {
@@ -228,28 +286,28 @@ poisson_glm_pp_lp(const std::vector<int>& y,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 86;
+        current_statement_begin__ = 93;
         int nobs(0);
         (void) nobs;  // dummy to suppress unused var warning
         stan::math::fill(nobs, std::numeric_limits<int>::min());
         stan::math::assign(nobs,num_elements(y));
-        current_statement_begin__ = 87;
+        current_statement_begin__ = 94;
         if (as_bool(logical_eq(link, 2))) {
-            current_statement_begin__ = 88;
+            current_statement_begin__ = 95;
             lp_accum__.add((a0 * poisson_log_log(y, eta)));
         } else {
             {
-            current_statement_begin__ = 91;
+            current_statement_begin__ = 98;
             validate_non_negative_index("mu", "nobs", nobs);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(nobs);
             stan::math::initialize(mu, DUMMY_VAR__);
             stan::math::fill(mu, DUMMY_VAR__);
             stan::math::assign(mu,linkinv(eta, link, pstream__));
-            current_statement_begin__ = 92;
+            current_statement_begin__ = 99;
             lp_accum__.add((a0 * poisson_log(y, mu)));
             }
         }
-        current_statement_begin__ = 94;
+        current_statement_begin__ = 101;
         return stan::math::promote_scalar<fun_return_scalar_t__>(get_lp(lp__, lp_accum__));
         }
     } catch (const std::exception& e) {
@@ -284,28 +342,28 @@ normal_glm_pp_lp(const std::vector<T0__>& y,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 112;
+        current_statement_begin__ = 119;
         int nobs(0);
         (void) nobs;  // dummy to suppress unused var warning
         stan::math::fill(nobs, std::numeric_limits<int>::min());
         stan::math::assign(nobs,num_elements(y));
-        current_statement_begin__ = 113;
+        current_statement_begin__ = 120;
         if (as_bool(logical_eq(link, 1))) {
-            current_statement_begin__ = 114;
+            current_statement_begin__ = 121;
             lp_accum__.add((a0 * normal_log(y, eta, stan::math::sqrt(phi))));
         } else {
             {
-            current_statement_begin__ = 117;
+            current_statement_begin__ = 124;
             validate_non_negative_index("mu", "nobs", nobs);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(nobs);
             stan::math::initialize(mu, DUMMY_VAR__);
             stan::math::fill(mu, DUMMY_VAR__);
             stan::math::assign(mu,linkinv(eta, link, pstream__));
-            current_statement_begin__ = 118;
+            current_statement_begin__ = 125;
             lp_accum__.add((a0 * normal_log(y, mu, stan::math::sqrt(phi))));
             }
         }
-        current_statement_begin__ = 120;
+        current_statement_begin__ = 127;
         return stan::math::promote_scalar<fun_return_scalar_t__>(get_lp(lp__, lp_accum__));
         }
     } catch (const std::exception& e) {
@@ -341,26 +399,26 @@ gamma_glm_pp_lp(const std::vector<T0__>& y,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 140;
+        current_statement_begin__ = 147;
         int nobs(0);
         (void) nobs;  // dummy to suppress unused var warning
         stan::math::fill(nobs, std::numeric_limits<int>::min());
         stan::math::assign(nobs,num_elements(y));
-        current_statement_begin__ = 141;
+        current_statement_begin__ = 148;
         validate_non_negative_index("mu", "nobs", nobs);
         Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu(nobs);
         stan::math::initialize(mu, DUMMY_VAR__);
         stan::math::fill(mu, DUMMY_VAR__);
         stan::math::assign(mu,linkinv(eta, link, pstream__));
-        current_statement_begin__ = 144;
+        current_statement_begin__ = 151;
         local_scalar_t__ alpha(DUMMY_VAR__);
         (void) alpha;  // dummy to suppress unused var warning
         stan::math::initialize(alpha, DUMMY_VAR__);
         stan::math::fill(alpha, DUMMY_VAR__);
         stan::math::assign(alpha,inv(phi));
-        current_statement_begin__ = 146;
+        current_statement_begin__ = 153;
         lp_accum__.add((a0 * gamma_log(y, alpha, multiply(alpha, inv(mu)))));
-        current_statement_begin__ = 147;
+        current_statement_begin__ = 154;
         return stan::math::promote_scalar<fun_return_scalar_t__>(get_lp(lp__, lp_accum__));
         }
     } catch (const std::exception& e) {
@@ -391,8 +449,8 @@ private:
         double a0;
         vector_d beta0;
         matrix_d Sigma0;
-        double disp_shape;
-        double disp_scale;
+        double disp_threshold;
+        double disp_probability;
         int link;
         int incl_offset;
         vector_d offset;
@@ -427,21 +485,21 @@ public:
         (void) DUMMY_VAR__;  // suppress unused var warning
         try {
             // initialize data block variables from context__
-            current_statement_begin__ = 157;
+            current_statement_begin__ = 164;
             context__.validate_dims("data initialization", "nobs", "int", context__.to_vec());
             nobs = int(0);
             vals_i__ = context__.vals_i("nobs");
             pos__ = 0;
             nobs = vals_i__[pos__++];
             check_greater_or_equal(function__, "nobs", nobs, 0);
-            current_statement_begin__ = 158;
+            current_statement_begin__ = 165;
             context__.validate_dims("data initialization", "p", "int", context__.to_vec());
             p = int(0);
             vals_i__ = context__.vals_i("p");
             pos__ = 0;
             p = vals_i__[pos__++];
             check_greater_or_equal(function__, "p", p, 0);
-            current_statement_begin__ = 159;
+            current_statement_begin__ = 166;
             validate_non_negative_index("y0", "nobs", nobs);
             context__.validate_dims("data initialization", "y0", "double", context__.to_vec(nobs));
             y0 = std::vector<double>(nobs, double(0));
@@ -451,7 +509,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < y0_k_0_max__; ++k_0__) {
                 y0[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 160;
+            current_statement_begin__ = 167;
             validate_non_negative_index("X", "nobs", nobs);
             validate_non_negative_index("X", "p", p);
             context__.validate_dims("data initialization", "X", "matrix_d", context__.to_vec(nobs,p));
@@ -465,7 +523,7 @@ public:
                     X(j_1__, j_2__) = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 161;
+            current_statement_begin__ = 168;
             context__.validate_dims("data initialization", "a0", "double", context__.to_vec());
             a0 = double(0);
             vals_r__ = context__.vals_r("a0");
@@ -473,7 +531,7 @@ public:
             a0 = vals_r__[pos__++];
             check_greater_or_equal(function__, "a0", a0, 0);
             check_less_or_equal(function__, "a0", a0, 1);
-            current_statement_begin__ = 162;
+            current_statement_begin__ = 169;
             validate_non_negative_index("beta0", "p", p);
             context__.validate_dims("data initialization", "beta0", "vector_d", context__.to_vec(p));
             beta0 = Eigen::Matrix<double, Eigen::Dynamic, 1>(p);
@@ -483,7 +541,7 @@ public:
             for (size_t j_1__ = 0; j_1__ < beta0_j_1_max__; ++j_1__) {
                 beta0(j_1__) = vals_r__[pos__++];
             }
-            current_statement_begin__ = 163;
+            current_statement_begin__ = 170;
             validate_non_negative_index("Sigma0", "p", p);
             validate_non_negative_index("Sigma0", "p", p);
             context__.validate_dims("data initialization", "Sigma0", "matrix_d", context__.to_vec(p,p));
@@ -497,21 +555,21 @@ public:
                     Sigma0(j_1__, j_2__) = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 164;
-            context__.validate_dims("data initialization", "disp_shape", "double", context__.to_vec());
-            disp_shape = double(0);
-            vals_r__ = context__.vals_r("disp_shape");
+            current_statement_begin__ = 171;
+            context__.validate_dims("data initialization", "disp_threshold", "double", context__.to_vec());
+            disp_threshold = double(0);
+            vals_r__ = context__.vals_r("disp_threshold");
             pos__ = 0;
-            disp_shape = vals_r__[pos__++];
-            check_greater_or_equal(function__, "disp_shape", disp_shape, 0);
-            current_statement_begin__ = 165;
-            context__.validate_dims("data initialization", "disp_scale", "double", context__.to_vec());
-            disp_scale = double(0);
-            vals_r__ = context__.vals_r("disp_scale");
+            disp_threshold = vals_r__[pos__++];
+            check_greater_or_equal(function__, "disp_threshold", disp_threshold, 0);
+            current_statement_begin__ = 172;
+            context__.validate_dims("data initialization", "disp_probability", "double", context__.to_vec());
+            disp_probability = double(0);
+            vals_r__ = context__.vals_r("disp_probability");
             pos__ = 0;
-            disp_scale = vals_r__[pos__++];
-            check_greater_or_equal(function__, "disp_scale", disp_scale, 0);
-            current_statement_begin__ = 166;
+            disp_probability = vals_r__[pos__++];
+            check_greater_or_equal(function__, "disp_probability", disp_probability, 0);
+            current_statement_begin__ = 173;
             context__.validate_dims("data initialization", "link", "int", context__.to_vec());
             link = int(0);
             vals_i__ = context__.vals_i("link");
@@ -519,7 +577,7 @@ public:
             link = vals_i__[pos__++];
             check_greater_or_equal(function__, "link", link, 1);
             check_less_or_equal(function__, "link", link, 9);
-            current_statement_begin__ = 167;
+            current_statement_begin__ = 174;
             context__.validate_dims("data initialization", "incl_offset", "int", context__.to_vec());
             incl_offset = int(0);
             vals_i__ = context__.vals_i("incl_offset");
@@ -527,7 +585,7 @@ public:
             incl_offset = vals_i__[pos__++];
             check_greater_or_equal(function__, "incl_offset", incl_offset, 0);
             check_less_or_equal(function__, "incl_offset", incl_offset, 1);
-            current_statement_begin__ = 168;
+            current_statement_begin__ = 175;
             validate_non_negative_index("offset", "nobs", nobs);
             context__.validate_dims("data initialization", "offset", "vector_d", context__.to_vec(nobs));
             offset = Eigen::Matrix<double, Eigen::Dynamic, 1>(nobs);
@@ -538,7 +596,7 @@ public:
                 offset(j_1__) = vals_r__[pos__++];
             }
             // initialize transformed data variables
-            current_statement_begin__ = 171;
+            current_statement_begin__ = 178;
             validate_non_negative_index("y0vec", "nobs", nobs);
             y0vec = Eigen::Matrix<double, Eigen::Dynamic, 1>(nobs);
             stan::math::fill(y0vec, DUMMY_VAR__);
@@ -548,10 +606,10 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 176;
+            current_statement_begin__ = 183;
             validate_non_negative_index("beta", "p", p);
             num_params_r__ += p;
-            current_statement_begin__ = 177;
+            current_statement_begin__ = 184;
             num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -570,7 +628,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 176;
+        current_statement_begin__ = 183;
         if (!(context__.contains_r("beta")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta");
@@ -587,7 +645,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 177;
+        current_statement_begin__ = 184;
         if (!(context__.contains_r("dispersion")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable dispersion missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("dispersion");
@@ -625,14 +683,14 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 176;
+            current_statement_begin__ = 183;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> beta;
             (void) beta;  // dummy to suppress unused var warning
             if (jacobian__)
                 beta = in__.vector_constrain(p, lp__);
             else
                 beta = in__.vector_constrain(p);
-            current_statement_begin__ = 177;
+            current_statement_begin__ = 184;
             local_scalar_t__ dispersion;
             (void) dispersion;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -641,48 +699,48 @@ public:
                 dispersion = in__.scalar_lb_constrain(0);
             // model body
             {
-            current_statement_begin__ = 183;
+            current_statement_begin__ = 190;
             validate_non_negative_index("eta", "((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? nobs : 0 )", ((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? nobs : 0 ));
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta(((primitive_value(logical_neq(link, 1)) || primitive_value(logical_eq(incl_offset, 1))) ? nobs : 0 ));
             stan::math::initialize(eta, DUMMY_VAR__);
             stan::math::fill(eta, DUMMY_VAR__);
-            current_statement_begin__ = 184;
+            current_statement_begin__ = 191;
             validate_non_negative_index("mu", "(logical_neq(link, 1) ? nobs : 0 )", (logical_neq(link, 1) ? nobs : 0 ));
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu((logical_neq(link, 1) ? nobs : 0 ));
             stan::math::initialize(mu, DUMMY_VAR__);
             stan::math::fill(mu, DUMMY_VAR__);
-            current_statement_begin__ = 185;
+            current_statement_begin__ = 192;
             local_scalar_t__ sigma(DUMMY_VAR__);
             (void) sigma;  // dummy to suppress unused var warning
             stan::math::initialize(sigma, DUMMY_VAR__);
             stan::math::fill(sigma, DUMMY_VAR__);
             stan::math::assign(sigma,stan::math::sqrt(dispersion));
-            current_statement_begin__ = 188;
+            current_statement_begin__ = 195;
             lp_accum__.add(multi_normal_log<propto__>(beta, beta0, Sigma0));
-            current_statement_begin__ = 189;
-            lp_accum__.add(inv_gamma_log<propto__>(dispersion, disp_shape, disp_scale));
-            current_statement_begin__ = 191;
+            current_statement_begin__ = 196;
+            lp_accum__.add(PC_lpdf<propto__>(dispersion, disp_threshold, disp_probability, 0.5, pstream__));
+            current_statement_begin__ = 198;
             if (as_bool(logical_gt(a0, 0))) {
-                current_statement_begin__ = 192;
+                current_statement_begin__ = 199;
                 if (as_bool((primitive_value(logical_eq(link, 1)) && primitive_value(logical_eq(incl_offset, 0))))) {
-                    current_statement_begin__ = 193;
+                    current_statement_begin__ = 200;
                     lp_accum__.add((a0 * normal_id_glm_log(y0vec, X, 0.0, beta, sigma)));
                 } else {
-                    current_statement_begin__ = 195;
+                    current_statement_begin__ = 202;
                     stan::math::assign(eta, multiply(X, beta));
-                    current_statement_begin__ = 196;
+                    current_statement_begin__ = 203;
                     if (as_bool(logical_eq(incl_offset, 1))) {
-                        current_statement_begin__ = 197;
+                        current_statement_begin__ = 204;
                         stan::math::assign(eta, add(eta, offset));
                     }
-                    current_statement_begin__ = 198;
+                    current_statement_begin__ = 205;
                     if (as_bool(logical_eq(link, 1))) {
-                        current_statement_begin__ = 199;
+                        current_statement_begin__ = 206;
                         lp_accum__.add((a0 * normal_log(y0, eta, sigma)));
                     } else {
-                        current_statement_begin__ = 201;
+                        current_statement_begin__ = 208;
                         stan::math::assign(mu, linkinv(eta, link, pstream__));
-                        current_statement_begin__ = 202;
+                        current_statement_begin__ = 209;
                         lp_accum__.add((a0 * normal_log(y0, mu, sigma)));
                     }
                 }

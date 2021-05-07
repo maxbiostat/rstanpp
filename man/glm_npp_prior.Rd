@@ -12,8 +12,8 @@ glm_npp_prior(
   beta0 = NULL,
   Sigma0 = NULL,
   offset = NULL,
-  disp.shape = 1e-04,
-  disp.scale = 1e-04,
+  disp.thresh = 1e-04,
+  disp.prob = 1e-04,
   ...
 )
 }
@@ -32,9 +32,9 @@ glm_npp_prior(
 
 \item{offset}{offset in GLM. If \code{NULL}, no offset is utilized}
 
-\item{disp.shape}{shape parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.thresh}{shape parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
-\item{disp.scale}{scale parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
+\item{disp.prob}{scale parameter for inverse-gamma prior on dispersion (for Gaussian and gamma models). Ignored for binomial and Poisson models}
 
 \item{...}{optional parameters to pass onto \code{rstan::sampling}}
 }
